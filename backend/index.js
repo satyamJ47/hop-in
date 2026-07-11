@@ -12,7 +12,7 @@ const {vehicleRouter} = require("./Routers/vehicle")
 const { paymentRouter } = require('./Routers/payment')
 
 const expireSeatHolds = require('./jobs/seatHoldExpiryJob');
-const connectDB = require('./config/mogodb');
+const connectDB = require('./config/mongodb');
 
 app.use(
   "/payment/webhook",
