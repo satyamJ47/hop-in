@@ -8,6 +8,7 @@ const razorpay = require("../config/razorpay");
 const { cancelBooking } = require("../services/cancellation.service");
 const { processRefund } = require("../services/refund.service");
 const { createSeatHold } = require("../services/booking.service");
+const refundQueue = require("../queues/refund.queue");
 
 const rideRouter = Router();
 
@@ -106,7 +107,24 @@ rideRouter.post("/cancel",auth,allowRole("passenger"),async (req,res)=>{
         console.log("after commit")
         console.log(gatewayPaymentId,refundAmount,refundTrackingId)
 
-        await processRefund({_id,gatewayPaymentId,refundAmount,refundTrackingId})
+        // await processRefund({_id,gatewayPaymentId,refundAmount,refundTrackingId})
+        await refundQueue.add("refund-payment", {
+            _id,
+            gatewayPaymentId,
+            refundAmount,
+            refundTrackingId
+            // paymentId: payment._id,
+        },
+        {
+            jobId: refundTrackingId.toString(),
+            attempts: 5,
+            backoff: {
+                type: "exponential",
+                delay: 5000
+            }
+        }
+        );
+
         console.log("After Final Update")
         
         res.status(200).json({message:"Ride Cancelled"})
