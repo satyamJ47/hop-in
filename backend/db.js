@@ -117,9 +117,30 @@ const bookedRideSchema = new Schema({
       type: String,
       enum: ["passenger", "driver", "system"]
     },
-    status: {
-      type: String,
-      enum: ["not_required","pending","processed","failed"]
+    
+    razorpay_status: {
+        type: String,
+        enum: ["not_initiated", "pending", "processed", "failed"],
+        default: "not_initiated"
+    },
+
+    queue: {
+      job_id: String,
+      status: {
+          type: String,
+          enum: ["pending", "queued", "processing", "completed", "failed"],
+          default: "pending"
+      },
+
+      updated_at: {
+          type: Date,
+          default: Date.now
+      },
+
+      attempts: {
+          type: Number,
+          default: 0
+      }
     }
   }],
 

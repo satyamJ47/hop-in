@@ -87,7 +87,7 @@ async function handleRefundCreated(payment,refund){
     },
     {
       $set:{
-        "refunds.$.status":"created"
+        "refunds.$.razorpay_status":"created"
       }
     }
   );
@@ -103,7 +103,7 @@ async function handleRefundSuccess(payment,refund){
       },
       {
         $set:{
-          "refunds.$.status":"processed"
+          "refunds.$.razorpay_status":"processed"
         }
       }
     );
@@ -118,7 +118,7 @@ async function handleRefundSuccess(payment,refund){
       },
       {
          $set:{
-            "refunds.$.status":"failed"
+            "refunds.$.razorpay_status":"failed"
          }
       }
    );

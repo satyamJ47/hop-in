@@ -8,46 +8,34 @@ async function processRefund({_id,gatewayPaymentId,refundAmount,refundTrackingId
     
             try{
 
-                // throw new Error("Crash");
-
-                // const booking = await BookedRideModel.findOne({
-                //     _id,
-                //     "refunds._id": refundTrackingId
-                // });
-
-                // if (!booking) {
-                //     throw new Error("Booking not found");
-                // }
-
-                // const refund = booking.refunds.id(refundTrackingId);
-                // if (!refund) {
-                //     throw new Error("Refund record not found");
-                // }
-                // if (refund.refund_id) {
-                //     console.log("Refund already initiated.");
-                //     return;
-                // }
-
-
-                // efficient
-                const booking = await BookedRideModel.findOne(
+                
+                const refund = await BookedRideModel.updateOne(
                     {
                         _id,
-                        "refunds._id": refundTrackingId
+                        refunds: {
+                            $elemMatch: {
+                                _id: refundTrackingId,
+                                "queue.status":"queued",
+                                refund_id: { $exists: false }
+                            }
+                        }
                     },
                     {
-                        "refunds.$": 1
-                    }
-                );
-                if (!booking) {
-                    throw new Error("Booking or refund record not found");
-                }
-                const refund = booking.refunds[0];
-                if (!refund) {
-                    throw new Error("Refund record not found");
-                }
-                if (refund.refund_id) {
-                    console.log("Refund already initiated.");
+                        $set:{
+                            "refunds.$.queue.status":"processing",
+                            "refunds.$.queue.updated_at":new Date()
+                        },
+                        // $inc:{
+                        //     "refunds.$.queue.attempts":1
+                        // }
+                    });
+                    
+                    console.log(refund)
+                    // test purpose
+                    // throw new Error("Crash");
+
+                if(refund.modifiedCount == 0){
+                    console.log("Refund already initiated or in processing.");
                     return;
                 }
 
@@ -81,7 +69,7 @@ async function processRefund({_id,gatewayPaymentId,refundAmount,refundTrackingId
                 {
                     $set: {
                         "refunds.$.refund_id": refundResponse.id,
-                        "refunds.$.status": refundResponse.status
+                        "refunds.$.razorpay_status": refundResponse.status
                     }
                 }
             );
