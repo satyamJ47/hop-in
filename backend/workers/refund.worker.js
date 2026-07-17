@@ -19,31 +19,75 @@ async function startWorker(){
         { connection }
     );
 
-    worker.on("completed", job => {
-        console.log("Completed", job.id);
-    });
-
-     worker.on("failed", async(job, err) => {
-        console.log("Failed", job.id);
-        console.error(err);
-        console.log("Attempt:", job.attemptsMade);
-        console.log("Remaining:", job.opts.attempts - job.attemptsMade);
-
-        if (job.attemptsMade === job.opts.attempts) {
-
+    worker.on("completed", async(job) => {
+        try {
+             if (!job) return;
             await BookedRideModel.updateOne(
                 {
                     _id: job.data._id,
                     "refunds._id": job.data.refundTrackingId
                 },
                 {
-                    $set:{
-                        "refunds.$.status":"failed"
+                    $set: {
+                        "refunds.$.queue.status": "completed",
+                        "refunds.$.queue.attempts": job.attemptsMade,
+                        "refunds.$.queue.updated_at": new Date()
                     }
                 }
-            );
+        )   ;
 
+    } catch(err){
+        console.error("Failed to update queue status:", err);
+    }
+
+    });
+
+     worker.on("failed", async(job, err) => {
+        try{
+
+            if (!job) return;
+
+            console.log("Failed", job.id);
+            console.error(err);
+            console.log("Attempt:", job.attemptsMade);
+            console.log("Remaining:", job.opts.attempts - job.attemptsMade);
+
+            if (job.attemptsMade === job.opts.attempts) {
+
+                await BookedRideModel.updateOne(
+                    {
+                        _id: job.data._id,
+                        "refunds._id": job.data.refundTrackingId
+                    },
+                    {
+                        $set:{
+                            "refunds.$.queue.status":"failed",
+                            "refunds.$.queue.attempts": job.attemptsMade,
+                            "refunds.$.queue.updated_at": new Date()
+                        }
+                    }
+                );
+            }
+            else if(job.attemptsMade < job.opts.attempts){
+                 await BookedRideModel.updateOne(
+                    {
+                        _id: job.data._id,
+                        "refunds._id": job.data.refundTrackingId
+                    },
+                    {
+                        $set:{
+                            "refunds.$.queue.status":"queued",
+                            "refunds.$.queue.attempts": job.attemptsMade,
+                            "refunds.$.queue.updated_at": new Date()
+                        }
+                    }
+                );
+            }
         }
+        catch(err){
+            console.log(err)
+        }
+       
 
     });
 }

@@ -125,6 +125,18 @@ rideRouter.post("/cancel",auth,allowRole("passenger"),async (req,res)=>{
         }
         );
 
+         const finalRes = await BookedRideModel.updateOne(
+                {
+                    _id,
+                    "refunds._id": refundTrackingId
+                },
+                {
+                    $set: {
+                        "refunds.$.queue.status": "queued",
+                        "refunds.$.queue.updated_at": new Date()
+                    }
+                }
+            );
         console.log("After Final Update")
         
         res.status(200).json({message:"Ride Cancelled"})

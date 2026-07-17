@@ -54,7 +54,6 @@ async function cancelBooking({_id,passenger_id,cancelledSeats,session}){
                     cancellation_fee:cancellationFee,
                     cancelled_at: new Date(),
                     cancelled_by:"passenger",
-                    status: "pending"
                     }
                 },
                 $inc: { active_seats: -cancelledSeats, cancelled_seats: cancelledSeats, total_cancellation_fee: cancellationFee, total_refund_amount: refundAmount }
