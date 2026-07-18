@@ -83,8 +83,15 @@ rideRouter.post("/book",auth,allowRole("passenger"),async (req,res)=>{
   
     }
     catch(err){
+        
         await session.abortTransaction();
-        res.status(400).json({ message: err.message });
+
+        console.error("Book Ride Error:", err);
+
+        return res.status(err.statusCode || 400).json({
+            success: false,
+            message: err.message || "Failed to book ride"
+        });
     }
     finally{
         session.endSession();
@@ -146,7 +153,13 @@ rideRouter.post("/cancel",auth,allowRole("passenger"),async (req,res)=>{
             await session.abortTransaction();
         }
         // await session.abortTransaction();
-        res.status(400).json({message:err.message})
+        
+        console.error("Cancel Ride Error:", err);
+
+        return res.status(err.statusCode || 400).json({
+            success: false,
+            message: err.message || "Failed to cancel booking"
+        });
     }
     finally{
         session.endSession();

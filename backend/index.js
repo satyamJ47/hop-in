@@ -14,6 +14,15 @@ const { paymentRouter } = require('./Routers/payment')
 const connectDB = require('./config/mongodb');
 const mongoose = require("mongoose");
 
+const helmet = require("helmet");
+app.use(helmet());
+
+const cors = require("cors");
+app.use(cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true
+}));
+
 
 app.use(
   "/payment/webhook",
