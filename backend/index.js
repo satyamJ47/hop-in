@@ -13,6 +13,7 @@ const { paymentRouter } = require('./Routers/payment')
 
 const expireSeatHolds = require('./jobs/seatHoldExpiryJob');
 const connectDB = require('./config/mongodb');
+const refundRecoveryScheduler = require("./scheduler/refund.scheduler");
 
 app.use(
   "/payment/webhook",
@@ -46,6 +47,14 @@ async function main(){
         console.error("Seat hold expiry job failed:", err);
       }
     }, 60 * 1000);
+
+    setInterval(async () => {
+      try {
+        await refundRecoveryScheduler();
+      } catch (err) {
+        console.error("Seat hold expiry job failed:", err);
+      }
+    }, 30 * 1000);
 
     app.listen(port, () => {
       console.log(`Example app listening on port http://localhost:${port}`)

@@ -13,10 +13,10 @@ async function processRefund({_id,gatewayPaymentId,refundAmount,refundTrackingId
                     {
                         _id,
                         refunds: {
-                            $elemMatch: {
+                           $elemMatch: {
                                 _id: refundTrackingId,
-                                "queue.status":"queued",
-                                refund_id: { $exists: false }
+                                "queue.status": "queued",
+                                razorpay_status: "not_initiated"
                             }
                         }
                     },

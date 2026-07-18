@@ -21,3 +21,15 @@ setInterval(async () => {
         completed: (await refundQueue.getCompleted()).length,
     });
 }, 1000);
+async function check() {
+    
+    // const job = await refundQueue.getJob("6a5a09c1b60fe63ec17674a5");
+    // console.log(job);
+    
+    const job = await refundQueue.getJob(
+        "6a5a09c1b60fe63ec17674a5"
+    );
+
+    console.log(await job.getState());
+}
+check();
