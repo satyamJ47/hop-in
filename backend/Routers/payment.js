@@ -1,8 +1,6 @@
 const express = require("express")
 const paymentRouter = express.Router()
 require('dotenv').config()
-console.log("KEY_ID = ", process.env.RAZORPAY_KEY_ID);
-console.log("KEY_SECRET = ", process.env.RAZORPAY_KEY_SECRET);
 
 const {auth} = require('../Middlewares/auth');
 const crypto = require("crypto");

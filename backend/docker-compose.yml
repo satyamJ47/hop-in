@@ -1,0 +1,57 @@
+version: "3.9"
+
+services:
+
+  redis:
+    image: redis:7-alpine
+    container_name: hop-in-redis
+
+    ports:
+      - "6379:6379"
+
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build: .
+
+    container_name: hop-in-api
+
+    env_file:
+      - .env
+
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+    depends_on:
+      - redis
+
+    ports:
+      - "3000:3000"
+
+    restart: unless-stopped
+
+  worker:
+    build: .
+
+    container_name: hop-in-worker
+
+    command: npm run worker
+
+    env_file:
+      - .env
+
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+    depends_on:
+      - redis
+
+    restart: unless-stopped

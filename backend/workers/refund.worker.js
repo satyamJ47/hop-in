@@ -6,7 +6,7 @@ const { BookedRideModel } = require("../db");
 
 async function startWorker(){
 
-    await connectDB();
+    
     console.log("Refund Worker Started");
     const worker = new Worker(
         "refundQueue",
@@ -34,15 +34,13 @@ async function startWorker(){
                         "refunds.$.queue.updated_at": new Date()
                     }
                 }
-        )   ;
-
-    } catch(err){
-        console.error("Failed to update queue status:", err);
-    }
-
+            );
+        } catch(err){
+            console.error("Failed to update queue status:", err);
+        }
     });
 
-     worker.on("failed", async(job, err) => {
+    worker.on("failed", async(job, err) => {
         try{
 
             if (!job) return;
@@ -90,9 +88,11 @@ async function startWorker(){
        
 
     });
+
+    return worker;
+
 }
 
-
-startWorker();
+module.exports = startWorker;
 
 
