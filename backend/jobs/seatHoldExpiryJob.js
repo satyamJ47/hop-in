@@ -7,7 +7,10 @@ async function expireSeatHolds() {
     expiresAt: { $lt: new Date() }
   });
   console.log(`Hold Seats Release`,new Date())
-  console.log(expiredHolds)
+  // console.log(expiredHolds)
+  if (expiredHolds.length > 0) {
+      console.log(`Released ${expiredHolds.length} expired seat hold(s).`);
+  }
   for (const hold of expiredHolds) {
 
     await RideModel.findByIdAndUpdate(

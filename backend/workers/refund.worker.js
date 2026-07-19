@@ -18,6 +18,7 @@ async function startWorker(){
         },
         { connection }
     );
+    console.log("Listening on BullMQ queue: refundQueue");
 
     worker.on("completed", async(job) => {
         try {

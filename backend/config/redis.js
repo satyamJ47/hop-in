@@ -6,4 +6,20 @@ const connection = new Redis({
     maxRetriesPerRequest: null
 });
 
+connection.on("connect", () => {
+    console.log("Connecting to Redis...");
+});
+
+connection.on("ready", () => {
+    console.log("Connected to Redis");
+});
+
+connection.on("error", (err) => {
+    console.error("Redis Error:", err);
+});
+
+connection.on("close", () => {
+    console.log("Redis connection closed");
+});
+
 module.exports = connection;

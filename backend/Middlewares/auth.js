@@ -6,7 +6,7 @@ function auth(req,res,next){
     const token = req.headers.token
     // console.log(token)
     if(!token)return res.status(401).json({ message: "No token provided. Please sign in." });
-    jwt.verify(token, process.env.jwt_secret, function(err, decoded) {
+    jwt.verify(token, process.env.JWT_SECRET, function(err, decoded) {
         if(decoded){
             // console.log(decoded._id)
             // console.log(decoded.role)
