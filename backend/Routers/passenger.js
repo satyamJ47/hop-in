@@ -4,7 +4,7 @@ const {Router} = require("express")
 const { PassengerModel, BookedRideModel } = require("../db")
 const passengerRouter = Router()
 const jwt = require("jsonwebtoken")
-// const {jwt_secret} = require("../const")
+
 const { allowRole } = require("../Middlewares/allowRole")
 const { auth } = require("../Middlewares/auth")
 
@@ -29,7 +29,7 @@ passengerRouter.post("/signin",async (req,res)=>{
     const token = jwt.sign({
         _id:response._id.toString(),
         role:"passenger" 
-    }, process.env.jwt_secret);
+    }, process.env.JWT_SECRET);
     return res.status(200).json({token});
 })
 

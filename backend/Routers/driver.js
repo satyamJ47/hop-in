@@ -42,7 +42,7 @@ driverRouter.post("/signin",async (req,res)=>{
     const token = jwt.sign({
         _id:response._id.toString(),
         role:"driver"
-    }, process.env.jwt_secret);
+    }, process.env.JWT_SECRET);
     return res.status(200).json({token:token})
 })
 
