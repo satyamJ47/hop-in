@@ -8,7 +8,8 @@
     "ioredis": "^5.11.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.4.1",
-    "razorpay": "^2.9.6"
+    "razorpay": "^2.9.6",
+    "zod": "^4.4.3"
   },
   "name": "backend",
   "version": "1.0.0",
@@ -16,9 +17,12 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+
     "start": "node index.js",
     "worker": "node workers/worker.js",
-    "dev": "nodemon index.js"
+
+    "dev": "nodemon -L index.js",
+    "worker:dev": "nodemon -L workers/worker.js"
   },
   "keywords": [],
   "author": "",

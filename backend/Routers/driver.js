@@ -1,4 +1,3 @@
-require("dotenv").config()
 const {Router} = require('express')
 
 const driverRouter = Router()
@@ -9,13 +8,15 @@ const jwt = require('jsonwebtoken');
 
 const {auth} = require('../Middlewares/auth');
 const { allowRole } = require('../Middlewares/allowRole');
+const validate = require("../Middlewares/validation");
+const { signupSchema, signinSchema } = require("../validation/driver.validation");
 
 driverRouter.get("/",(req,res)=>{
     console.log("driver")
     res.send("driver router")
 })
 
-driverRouter.post("/signup",async (req,res)=>{
+driverRouter.post("/signup",validate(signupSchema),async (req,res)=>{
     const name = req.body.name;
     const email = req.body.email;
     const password = req.body.password;
@@ -31,7 +32,7 @@ driverRouter.post("/signup",async (req,res)=>{
    
 })
 
-driverRouter.post("/signin",async (req,res)=>{
+driverRouter.post("/signin",validate(signinSchema),async (req,res)=>{
     const email = req.body.email;
     const password = req.body.password;
     const response = await DriverModel.findOne({email,password}).exec();

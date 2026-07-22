@@ -1,5 +1,3 @@
-require("dotenv").config();
-
 const {Router} = require("express")
 const { PassengerModel, BookedRideModel } = require("../db")
 const passengerRouter = Router()
@@ -7,12 +5,14 @@ const jwt = require("jsonwebtoken")
 
 const { allowRole } = require("../Middlewares/allowRole")
 const { auth } = require("../Middlewares/auth")
+const validate = require("../Middlewares/validation")
+const { signupSchema, signinSchema } = require("../validation/driver.validation")
 
 passengerRouter.get("/",(req,res)=>{
     res.send("passenger router")
 })
 
-passengerRouter.post("/signup",async (req,res)=>{
+passengerRouter.post("/signup",validate(signupSchema),async (req,res)=>{
     const {name,email,password} = req.body;
     const duplicateCheck = await PassengerModel.findOne({email}).exec()
     if(duplicateCheck!=null)return res.json({message:"Email already exist"});
@@ -21,7 +21,7 @@ passengerRouter.post("/signup",async (req,res)=>{
     return res.json({message:"User Signed In"}) 
 })
 
-passengerRouter.post("/signin",async (req,res)=>{
+passengerRouter.post("/signin",validate(signinSchema),async (req,res)=>{
     const {email,password} = req.body
     const response = await PassengerModel.findOne({email,password}).exec()
     if(response==null)return res.json({message:"Incorrect email or password"});

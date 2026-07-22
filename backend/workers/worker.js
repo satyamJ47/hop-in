@@ -1,4 +1,6 @@
-require("dotenv").config();
+require("dotenv").config({
+    quiet: true
+});
 
 const startRefundWorker = require("./refund.worker");
 const expireSeatHolds = require("../jobs/seatHoldExpiryJob");

@@ -21,6 +21,11 @@ const rideSchema = new Schema({
     dest: String,
     departure_time: Date,
     available_seats: Number,
+    booked_seats: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
     fare: Number
 },{ timestamps: true })
 
