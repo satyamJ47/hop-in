@@ -1,6 +1,5 @@
 const express = require("express")
 const paymentRouter = express.Router()
-require('dotenv').config()
 
 const {auth} = require('../Middlewares/auth');
 const crypto = require("crypto");
@@ -11,13 +10,11 @@ const { default: mongoose } = require("mongoose");
 const { error } = require("console");
 const razorpay = require("../config/razorpay");
 const { handlePaymentFailure, handleRefundCreated, handleRefundSuccess, handleRefundFailure, handlePaymentSuccess } = require("../services/payment.service");
-// const razorpay = new Razorpay({
-//   key_id: process.env.RAZORPAY_KEY_ID,
-//   key_secret: process.env.RAZORPAY_KEY_SECRET,
-// });
+const validate = require("../Middlewares/validation");
+const { createOrderSchema } = require("../validation/driver.validation");
 
 
-paymentRouter.post("/create-order", auth, async (req, res) => {
+paymentRouter.post("/create-order", auth, validate(createOrderSchema), async (req, res) => {
     try{
         const { hold_id } = req.body;
 

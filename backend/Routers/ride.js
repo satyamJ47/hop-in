@@ -9,6 +9,8 @@ const { cancelBooking } = require("../services/cancellation.service");
 const { processRefund } = require("../services/refund.service");
 const { createSeatHold } = require("../services/booking.service");
 const refundQueue = require("../queues/refund.queue");
+const validate = require("../Middlewares/validation");
+const { bookSchema, cancellSchema, searchRideSchema } = require("../validation/driver.validation");
 
 const rideRouter = Router();
 
@@ -64,7 +66,7 @@ rideRouter.get("/",(req,res)=>{
 //     }
 
 // })
-rideRouter.post("/book",auth,allowRole("passenger"),async (req,res)=>{
+rideRouter.post("/book",auth,validate(bookSchema),allowRole("passenger"),async (req,res)=>{
 
     // we can create session with any model example RideModel or BookedRideModel internally it uses mongoose.connection.startSession() 
     // or we can use mongoose.startSession() for simplicity
@@ -72,11 +74,11 @@ rideRouter.post("/book",auth,allowRole("passenger"),async (req,res)=>{
     session.startTransaction();
 
     try{
-        const {_id,booked_seats} = req.body
+        const {_id,bookedSeats} = req.body
         const passenger_id = req.user._id
 
         // function cal
-        const {heldSeat,amount} = await createSeatHold({_id,booked_seats,passenger_id,session});
+        const {heldSeat,amount} = await createSeatHold({_id,bookedSeats,passenger_id,session});
 
         await session.commitTransaction();
         return res.status(200).json({hold_id:heldSeat[0]._id,amount:amount})
@@ -98,7 +100,7 @@ rideRouter.post("/book",auth,allowRole("passenger"),async (req,res)=>{
     }
 });
 
-rideRouter.post("/cancel",auth,allowRole("passenger"),async (req,res)=>{
+rideRouter.post("/cancel",auth,validate(cancellSchema),allowRole("passenger"),async (req,res)=>{
 
     const session = await mongoose.startSession();
     try{
@@ -153,7 +155,7 @@ rideRouter.post("/cancel",auth,allowRole("passenger"),async (req,res)=>{
             await session.abortTransaction();
         }
         // await session.abortTransaction();
-        
+
         console.error("Cancel Ride Error:", err);
 
         return res.status(err.statusCode || 400).json({
@@ -191,7 +193,7 @@ rideRouter.post("/cancel",auth,allowRole("passenger"),async (req,res)=>{
 
 
 // infinite scroll -> optimized search
-rideRouter.get("/search", async (req, res) => {
+rideRouter.get("/search",validate(searchRideSchema,"query") ,async (req, res) => {
     const { src, dest, date, limit = 5, cursor } = req.query;
     
     const start = new Date(`${date}T00:00:00+05:30`)

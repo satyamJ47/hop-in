@@ -72,7 +72,7 @@ async function cancelBooking({_id,passenger_id,cancelledSeats,session}){
         console.log("booking: ",booking)
         const response = await RideModel.findByIdAndUpdate(
             booked_ride.ride_id, 
-            { $inc: { available_seats: cancelledSeats }},
+            { $inc: { available_seats: cancelledSeats, booked_seats:-cancelledSeats }},
             {returnDocument:"after",session}
         )
         console.log("rideResponse",response)

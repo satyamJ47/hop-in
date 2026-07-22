@@ -3,6 +3,8 @@ const { model } = require('mongoose')
 const { auth } = require('../Middlewares/auth')
 const { VehicleModel } = require('../db')
 const { allowRole } = require('../Middlewares/allowRole')
+const validate = require('../Middlewares/validation')
+const { vehicleSchema, updateVehicleSchema, deleteVehicleSchema } = require('../validation/driver.validation')
 
 const vehicleRouter = Router()
 
@@ -13,7 +15,7 @@ vehicleRouter.get("/",auth,allowRole("driver"),async (req,res)=>{
     return res.json(vehicles)
 })
 
-vehicleRouter.post("/", auth,allowRole("driver"),async (req,res)=>{
+vehicleRouter.post("/", auth,validate(vehicleSchema),allowRole("driver"),async (req,res)=>{
     const {veh_no,company,model,color,type,seats} = req.body;
     const owner = req.user._id
     const response = await VehicleModel.create({
@@ -25,12 +27,12 @@ vehicleRouter.post("/", auth,allowRole("driver"),async (req,res)=>{
 
 // update vehicle ->
 // Possibility of
-vehicleRouter.put("/",auth,allowRole("driver"),async (req,res)=>{
+vehicleRouter.put("/",auth,validate(updateVehicleSchema),allowRole("driver"),async (req,res)=>{
     const {_id,veh_no,company,model,color,type,seats} = req.body;
     const owner = req.user._id
     const response = await VehicleModel.updateOne(
-        {_id},
-        {owner,veh_no,company,model,color,type,seats}
+        {_id,owner},
+        {veh_no,company,model,color,type,seats}
     );
     console.log(response)
     if(response.modifiedCount>=1){
@@ -41,13 +43,24 @@ vehicleRouter.put("/",auth,allowRole("driver"),async (req,res)=>{
 
 // NEED TO WORK ->  show warning if this vehicle is added for some rides then driver needs to add other vehicle there or cancel/delete ride
 // delete vehicle
-vehicleRouter.delete("/",auth,allowRole("driver"),async (req,res)=>{
+vehicleRouter.delete("/",auth,validate(deleteVehicleSchema),allowRole("driver"),async (req,res)=>{
     const {_id} = req.body
     const owner = req.user._id
-    await VehicleModel.findOneAndDelete(
+    const response = await VehicleModel.findOneAndDelete(
         {_id,owner}
     );
-    return res.json({message:"Vehicle deleted"})
+    console.log(response)
+     if (!response) {
+      return res.status(404).json({
+        success: false,
+        message: "Vehicle not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Vehicle deleted",
+    });
 })
 
 
