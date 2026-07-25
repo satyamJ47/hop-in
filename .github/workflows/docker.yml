@@ -25,13 +25,15 @@ jobs:
       - name: Build and Push API
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./backend
+          file: ./backend/Dockerfile
           push: true
           tags: satyamworks/hop-in-api:latest
 
       - name: Build and Push Worker
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./backend
+          file: ./backend/Dockerfile
           push: true
           tags: satyamworks/hop-in-worker:latest
