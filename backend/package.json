@@ -11,12 +11,12 @@
     "razorpay": "^2.9.6",
     "zod": "^4.4.3"
   },
-  "name": "backend",
+  "name": "hop-in-api",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+   "test": "echo \"No tests configured\"",
 
     "start": "node index.js",
     "worker": "node workers/worker.js",
