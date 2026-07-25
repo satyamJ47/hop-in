@@ -10,6 +10,7 @@ const {auth} = require('../Middlewares/auth');
 const { allowRole } = require('../Middlewares/allowRole');
 const validate = require("../Middlewares/validation");
 const { signupSchema, signinSchema } = require("../validation/driver.validation");
+const getRides = require('../services/rides.service');
 
 driverRouter.get("/",(req,res)=>{
     console.log("driver")
@@ -49,14 +50,6 @@ driverRouter.post("/signin",validate(signinSchema),async (req,res)=>{
 
 
 // driver's rides Endpoints -> might move to new file 
-// get list of rides created by driver
-driverRouter.get("/ride",auth,allowRole("driver"), async(req,res)=>{
-    const driver_id  = req.user._id
-    const rides = await RideModel.find({driver_id})
-    if(rides.length == 0)return res.json({message:"No rides created. Please add ride."});
-    return res.json(rides)
-})
-
 
 // driver creates ride
 driverRouter.post("/ride",auth, allowRole("driver") ,async (req,res)=>{
@@ -101,6 +94,37 @@ driverRouter.delete("/ride",auth,allowRole("driver"),async(req,res)=>{
     return res.json({message:"ride deleted successfully"})
 })
 
+
+// get list of rides created by driver
+driverRouter.get("/ride",auth,allowRole("driver"), async(req,res)=>{
+    const driver_id  = req.user._id
+    const rides = await RideModel.find({driver_id})
+    if(rides.length == 0)return res.json({message:"No rides created. Please add ride."});
+    return res.json({Number:rides.length,rides})
+})
+
+driverRouter.get("/rides/upcoming",auth,allowRole("driver"), async(req,res)=>{
+    const driver_id  = req.user._id
+    const {cursor,limit=5} = req.query;
+    let query = { driver_id, departure_time:{$gt:new Date()} }
+    
+    const options = {cursor,type:"upcoming",limit}
+    const result = await getRides(query,options);
+
+    res.json(result);
+})
+
+
+driverRouter.get("/rides/history",auth,allowRole("driver"), async(req,res)=>{
+    const driver_id  = req.user._id
+    const {cursor,limit=5} = req.query;
+    const options = {cursor,type:"history",limit}
+    let query = { driver_id, departure_time:{$lt:new Date()} }
+
+    const result = await getRides(query,options);
+
+    res.json(result);
+})
 
 module.exports = {
     driverRouter: driverRouter
