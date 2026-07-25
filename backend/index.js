@@ -6,7 +6,7 @@ require("dotenv").config({
 const express = require('express')
 const app = express()
 
-const port = process.env.PORT || 3000
+const PORT = process.env.PORT || 3000
 
 const {driverRouter} = require("./Routers/driver")
 const {passengerRouter} = require("./Routers/passenger")
@@ -58,8 +58,9 @@ let server;
 async function main(){
   try{
     await connectDB();
-     server = app.listen(port, () => {
-      console.log(`Example app listening on port http://localhost:${port}`)
+     server = app.listen(PORT, () => {
+      // console.log(`Example app listening on port http://localhost:${port}`)
+      console.log(`Hop-In API started on port ${PORT}`);
     })
   }
   catch(err){

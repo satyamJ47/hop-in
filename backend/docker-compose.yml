@@ -2,23 +2,22 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: hop-in-redis
-
-    ports:
-      - "6379:6379"
 
     restart: unless-stopped
+
+    volumes:
+      - redis-data:/data
 
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s
       retries: 5
+      start_period: 5s
 
   api:
+    image: satyamworks/hop-in-api:latest
     build: .
-
-    container_name: hop-in-api
 
     env_file:
       - .env
@@ -28,17 +27,24 @@ services:
       REDIS_PORT: 6379
 
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
 
     ports:
       - "3000:3000"
 
     restart: unless-stopped
 
-  worker:
-    build: .
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
 
-    container_name: hop-in-worker
+  worker:
+    image: satyamworks/hop-in-worker:latest
+    build: .
 
     command: npm run worker
 
@@ -50,6 +56,10 @@ services:
       REDIS_PORT: 6379
 
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
 
     restart: unless-stopped
+
+volumes:
+  redis-data:
