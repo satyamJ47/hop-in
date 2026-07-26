@@ -52,6 +52,12 @@ app.get("/health", (req, res) => {
   });
 });
 
+app.get("/version", (req, res) => {
+    res.json({
+        version: "1.0.1",
+        deployed: "CI/CD Test"
+    });
+});
 
 // Wait for database to connect, logging an error if there is a problem
 let server;
