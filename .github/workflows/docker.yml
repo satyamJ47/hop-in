@@ -37,3 +37,21 @@ jobs:
           file: ./backend/Dockerfile
           push: true
           tags: satyamworks/hop-in-worker:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: docker
+
+    steps:
+      - name: Deploy to VM
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/hop-in
+            git pull
+            cd backend
+            docker compose pull
+            docker compose up -d
