@@ -1,0 +1,32 @@
+Time line of search page
+
+Initial
+------------------------
+loading = false
+rides = []
+↓
+Render SearchPage
+
+
+setLoading(true)
+------------------------
+loading = true
+rides = []
+↓
+Render Loading...
+
+
+setRides(...)
+------------------------
+loading = true
+rides = [5]
+↓
+Render Loading...   ← rides exist but aren't shown yet
+
+
+setLoading(false)
+------------------------
+loading = false
+rides = [5]
+↓
+Render RideCards
