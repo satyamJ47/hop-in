@@ -16,3 +16,18 @@ endSession(): ends the active session
 
 https://www.mongodb.com/docs/drivers/node/current/crud/transactions/
 
+
+backend running for development
+
+# Once after boot
+docker compose -f docker-compose.dev.yml up -d redis
+
+# Terminal 1
+npm run dev
+
+# Terminal 2
+npm run worker
+
+# Terminal 3
+cd ../frontend
+npm run dev

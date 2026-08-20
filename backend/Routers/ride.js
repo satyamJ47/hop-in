@@ -239,4 +239,31 @@ rideRouter.get("/search",validate(searchRideSchema,"query") ,async (req, res) =>
     });
 });
 
+rideRouter.get("/:rideId", async (req, res) => {
+    try {
+        const { rideId } = req.params;
+
+        const ride = await RideModel.findById(rideId);
+
+        if (!ride) {
+            return res.status(404).json({
+                success: false,
+                message: "Ride not found",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            ride,
+        });
+    } catch (err) {
+        console.error("Get Ride Error:", err);
+
+        return res.status(400).json({
+            success: false,
+            message: "Invalid ride ID",
+        });
+    }
+});
+
 module.exports = {rideRouter}

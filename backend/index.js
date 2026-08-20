@@ -6,7 +6,14 @@ require("dotenv").config({
 const express = require('express')
 const app = express()
 
+const cors = require("cors");
+app.use(cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true
+}));
+
 const PORT = process.env.PORT || 3000
+
 
 const {driverRouter} = require("./Routers/driver")
 const {passengerRouter} = require("./Routers/passenger")
@@ -20,11 +27,7 @@ const mongoose = require("mongoose");
 const helmet = require("helmet");
 app.use(helmet());
 
-const cors = require("cors");
-app.use(cors({
-    origin: process.env.FRONTEND_URL,
-    credentials: true
-}));
+
 
 
 app.use(
