@@ -15,8 +15,18 @@ const passengerSchema = new Schema({
 },{ timestamps: true })
 
 const rideSchema = new Schema({
-    driver_id:ObjectId,
-    vehicle_id:ObjectId ,
+     driver_id: {
+        type: ObjectId,
+        ref: "driver",
+        required: true
+    },
+
+    vehicle_id: {
+        type: ObjectId,
+        ref: "vehicle",
+        required: true
+    },
+
     src: String,
     dest: String,
     departure_time: Date,
@@ -88,7 +98,8 @@ const bookedRideSchema = new Schema({
   payment_id:{
     type: ObjectId,
     ref: "payment" ,
-    required: true
+    required: true,
+    unique: true
   },
 
   active_seats: {
@@ -169,13 +180,21 @@ const bookedRideSchema = new Schema({
 const paymentSchema = new Schema({
   hold_id: { type: ObjectId, ref: "seat-hold" },
   gatewayOrderId: String,
-  gatewayPaymentId: String,
+  gatewayPaymentId: {
+      type: String,
+      unique: true,
+      sparse: true
+  },
   status: { type: String, enum: ["created", "captured", "failed"] }
 }, { timestamps: true });
 
  
 const vehicleSchema = new Schema({
-    owner: ObjectId,
+    owner: {
+        type: ObjectId,
+        ref: "driver",
+        required: true
+    },
     veh_no: String,
     company: String,
     model: String,
