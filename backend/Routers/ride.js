@@ -243,7 +243,9 @@ rideRouter.get("/:rideId", async (req, res) => {
     try {
         const { rideId } = req.params;
 
-        const ride = await RideModel.findById(rideId);
+        const ride = await RideModel.findById(rideId)
+        .populate("driver_id","name")
+        .populate("vehicle_id");
 
         if (!ride) {
             return res.status(404).json({

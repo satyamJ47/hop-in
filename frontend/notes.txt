@@ -1,3 +1,47 @@
+key → identity of list elements/components during reconciliation.
+    - A B C
+    - A C D
+
+Reacts identifies using key A C are same and C is removed and D is added, so by comparing 2 DOM trees it updates just new components / changed componenets 
+
+Hook order → identity of Hooks within a component.
+Always create hook on top of components
+do not create inside loops, if or any conditional codes
+
+React conceptually keeps:
+
+RideCard instance
+    Hook #1 → expanded
+    Hook #2 → loading
+
+On every render, React expects:
+
+Hook #1 → same Hook
+Hook #2 → same Hook
+
+That's why you can't do:
+
+if (something) {
+    useState(); // ❌
+}
+
+because the Hook order could change between renders.
+
+React
+│
+├── Reconciliation / component identity
+│       │
+│       └── key
+│            ↓
+│       "Which component is this?"
+│
+└── Inside each component
+        │
+        └── Hook call order
+             ↓
+        "Which Hook/state is this?"
+
+
 Time line of search page
 
 Initial
@@ -30,3 +74,95 @@ loading = false
 rides = [5]
 ↓
 Render RideCards
+
+
+__________________________________________________________________
+
+
+auth routes
+
+/                  → Home/Search           PUBLIC
+/search            → Search results        PUBLIC
+/rides/:rideId     → Ride details          PUBLIC
+/login             → Login                 PUBLIC
+/signup            → Signup                PUBLIC
+
+/book/:rideId      → Booking               AUTH REQUIRED
+/bookings          → My bookings           AUTH REQUIRED
+/profile           → Profile               AUTH REQUIRED
+/driver/...        → Driver features       AUTH REQUIRED
+
+
+authentication
+Signup
+created form add handleSubmit function on button click which on successful sigin navigate to login page
+
+Login/Signin
+created form add handleSubmit function on button click which on successful sigin do following things 
+    - token which we got from backend is stored in local storage
+    - navigate to homepage
+
+when user do booking/cancel we need to share token for auth middleware in backend
+this is done using interceptor in axios.js which by default add token in header of each api request
+
+
+Navbar -> LogIn and LogOut Button which works as toggle
+ when we do login using login page we need to do refresh the page to see Login -> Logout 
+
+ so we can use useState in Navbar but to update the state and change button but to use the same state in Login page we have to pass state as a prop by uplifting the state to their parent
+
+ instead use context and keep it to higher level and then use it in lower levels 
+
+Introduction to context -> createContext useContext
+but to share auth state with navbar and differnt components we have to use context
+
+
+            AuthContext
+                 │
+        isLoggedIn / login / logout
+                 │
+        ┌────────┴─────────┐
+        ↓                  ↓
+     Navbar            LoginPage
+
+
+"Why do we need Context?"
+
+LoginPage ──────── changes login state
+                         ↓
+                    Navbar needs
+                    that state
+                         ↓
+               But Navbar and LoginPage
+               are different components
+
+
+3 points :
+localStorage -> JWT persistent
+Context -> Reacts current authentication state
+Axios Interceptor -> Automatically sends JWT to backend
+
+AuthProvider
+    │
+    └── App
+         │
+         ├── Navbar
+         ├── LoginPage
+         ├── HomePage
+         ├── BookingPage
+         └── ...
+
+Therefore all of these can access the auth state.
+
+__________________________________________________________________
+
+***Protected routes
+
+Home → public
+Search rides → public
+Ride details → public
+Booking page → accessible, but booking action requires login
+My Bookings → protected
+Profile → protected
+Driver dashboard → protected
+

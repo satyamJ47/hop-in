@@ -1,13 +1,15 @@
-import { useSearchParams} from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import { searchRides } from "@/api/rides";
 import RideCard from "@/components/RideCard";
 import { Button } from "@/components/ui/button";
+import SearchForm from "@/components/SearchForm";
+import { format } from "date-fns";
 
 export default function SearchPage() {
     const [rides, setRides] = useState([]);
-    const [loading, setLoading] = useState(false); //initial loading for whole rides
-    const [loadingMore, setLoadingMore] = useState(false); //load more rides spinner
+    const [loading, setLoading] = useState(false);
+    const [loadingMore, setLoadingMore] = useState(false);
     const [error, setError] = useState(null);
     const [searchParams] = useSearchParams();
     const [nextCursor, setNextCursor] = useState(null);
@@ -18,32 +20,30 @@ export default function SearchPage() {
     const destination = searchParams.get("dest");
     const date = searchParams.get("date");
 
-    console.log("render")
-    console.log({rides,loading,error,loadMoreController})
+    const hasSearchParams =
+        source && destination && date;
 
     useEffect(() => {
-        // console.log("Searching for", {
-        //     source,
-        //     destination,
-        //     date,
-        // });
+        // No search has been performed yet
+        if (!source || !destination || !date) {
+            setRides([]);
+            setNextCursor(null);
+            setError(null);
+            setLoading(false);
+            return;
+        }
+
+        // Clear previous search results
+        setRides([]);
+        setNextCursor(null);
+        setError(null);
 
         const controller = new AbortController();
 
-console.log("Initial controller created:", controller);
-console.log("Initial signal:", controller.signal);
-        
         async function fetchRides() {
-
             setLoading(true);
-            setError(null);
-
-            // Artificial delay
-            // await new Promise((resolve) => setTimeout(resolve, 9000));
-
 
             try {
-
                 const data = await searchRides({
                     src: source,
                     dest: destination,
@@ -53,47 +53,40 @@ console.log("Initial signal:", controller.signal);
 
                 setRides(data.rides);
                 setNextCursor(data.nextCursor);
-
-            }
-            catch (err) {
+            } catch (err) {
                 if (err.code === "ERR_CANCELED") {
                     return;
                 }
-                setError(err.response?.data?.message || "Failed to fetch rides");
-            }
-            finally {
+
+                setError(
+                    err.response?.data?.message ||
+                    "Failed to fetch rides"
+                );
+            } finally {
                 setLoading(false);
             }
         }
 
         fetchRides();
+
         return () => {
-            //  console.log("Aborting initial controller:", controller);
-    controller.abort();
-    // console.log("Initial controller after abort:", controller.signal);
-    
-    loadMoreController.current?.abort();
+            controller.abort();
+            loadMoreController.current?.abort();
         };
-
-        console.log(controller.signal.aborted);
-
     }, [source, destination, date]);
 
-
-
     async function loadMoreRides() {
-        if (!nextCursor || loadingMore) return;
+        if (!nextCursor || loadingMore) {
+            return;
+        }
 
         setLoadingMore(true);
         setError(null);
 
         const controller = new AbortController();
+
         loadMoreController.current = controller;
 
-        // console.log("Load More controller created:", controller);
-        // console.log("Stored in ref:", loadMoreController.current);
-
-        //  await new Promise((resolve) => setTimeout(resolve, 9000));
         try {
             const data = await searchRides({
                 src: source,
@@ -103,12 +96,17 @@ console.log("Initial signal:", controller.signal);
                 signal: controller.signal,
             });
 
-            setRides((prev) => [...prev, ...data.rides]);
+            setRides((prev) => [
+                ...prev,
+                ...data.rides,
+            ]);
+
             setNextCursor(data.nextCursor);
         } catch (err) {
             if (err.code === "ERR_CANCELED") {
                 return;
             }
+
             setError(
                 err.response?.data?.message ||
                 "Failed to fetch more rides"
@@ -119,61 +117,111 @@ console.log("Initial signal:", controller.signal);
         }
     }
 
-    if (loading) {
-        return <p>Loading rides...</p>;
-    }
-
-    if (error) {
-        return <p className="text-destructive">{error}</p>;
-    }
     return (
- 
         <>
-        <div className="mx-auto max-w-7xl px-6 py-8">
-            <h1 className="text-3xl font-bold">
-                Search Results
-            </h1>
-
-            <p className="mt-4">
-                Source: {source}
-            </p>
-
-            <p>
-                Destination: {destination}
-            </p>
-
-            <p>
-                Date: {date}
-            </p>
-        </div>
-
-        <div className="mt-8 space-y-4">
-            {rides.length === 0 ? (
-                <p className="text-muted-foreground">
-                    No rides found for this route and date.
-                </p>
-            ) : (
-                rides.map((ride) => (
-                    <RideCard
-                        key={ride._id}
-                        ride={ride}
-                    />
-                ))
-            )}
-        </div>
-
-        {nextCursor && (
-            <div className="mt-6 flex justify-center">
-                <Button
-                    onClick={loadMoreRides}
-                    disabled={loadingMore}
-                >
-                    {loadingMore ? "Loading..." : "Load More"}
-                </Button>
+            {/* Search Form */}
+            <div className="mx-auto max-w-7xl px-6 pt-6">
+                <SearchForm />
             </div>
-        )}
 
+            {/* Initial state - no search yet */}
+            {!hasSearchParams && (
+                <div className="mx-auto max-w-4xl px-6 pt-12 text-center">
+                    <h2 className="text-xl font-semibold">
+                        Find your next ride
+                    </h2>
+
+                    <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+                        Enter your pickup location, destination,
+                        and travel date to find available rides.
+                    </p>
+                </div>
+            )}
+
+            {/* Search Results */}
+            {hasSearchParams && (
+                <>
+                    {/* Search Summary */}
+                    <div className="mx-auto max-w-4xl px-6 pt-8">
+                        <div className="flex items-end justify-between">
+                            <div>
+                                <h1 className="text-2xl font-bold">
+                                    {source} → {destination}
+                                </h1>
+
+                                <p className="mt-1 text-sm text-muted-foreground">
+                                    {format(
+                                        new Date(date),
+                                        "dd MMM yyyy"
+                                    )}
+                                </p>
+                            </div>
+
+                            {!loading && !error && (
+                                <p className="text-sm text-muted-foreground">
+                                    {rides.length}{" "}
+                                    {rides.length === 1
+                                        ? "ride"
+                                        : "rides"}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Loading */}
+                    {loading && (
+                        <div className="mx-auto mt-8 max-w-4xl px-6">
+                            <p className="text-muted-foreground">
+                                Loading rides...
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Error */}
+                    {!loading && error && (
+                        <div className="mx-auto mt-8 max-w-4xl px-6">
+                            <p className="text-destructive">
+                                {error}
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Rides */}
+                    {!loading && !error && (
+                        <>
+                            <div className="mx-auto mt-8 max-w-4xl space-y-4 px-6">
+                                {rides.length === 0 ? (
+                                    <p className="text-muted-foreground">
+                                        No rides found for this route
+                                        and date.
+                                    </p>
+                                ) : (
+                                    rides.map((ride) => (
+                                        <RideCard
+                                            key={ride._id}
+                                            ride={ride}
+                                        />
+                                    ))
+                                )}
+                            </div>
+
+                            {/* Load More */}
+                            {nextCursor && (
+                                <div className="mt-6 flex justify-center">
+                                    <Button
+                                        onClick={loadMoreRides}
+                                        disabled={loadingMore}
+                                    >
+                                        {loadingMore
+                                            ? "Loading..."
+                                            : "Load More"}
+                                    </Button>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </>
+            )}
         </>
-        
     );
 }

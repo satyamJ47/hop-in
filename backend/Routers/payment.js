@@ -12,6 +12,7 @@ const razorpay = require("../config/razorpay");
 const { handlePaymentFailure, handleRefundCreated, handleRefundSuccess, handleRefundFailure, handlePaymentSuccess } = require("../services/payment.service");
 const validate = require("../Middlewares/validation");
 const { createOrderSchema } = require("../validation/driver.validation");
+const { allowRole } = require("../Middlewares/allowRole");
 
 
 paymentRouter.post("/create-order", auth, validate(createOrderSchema), async (req, res) => {
@@ -38,7 +39,7 @@ paymentRouter.post("/create-order", auth, validate(createOrderSchema), async (re
           status: order.status
         })
         console.log(payment)
-        return res.json(order,payment);
+        return res.json(order);
     }
     catch(err){
         console.error("Webhook Error:", err);
@@ -111,6 +112,57 @@ paymentRouter.post("/webhook", async (req, res) => {
       });
     }
 });
+
+paymentRouter.get(
+    "/booking-status/:paymentId",
+    auth,
+    allowRole("passenger"),
+    async (req, res) => {
+
+        const { paymentId } = req.params;
+        const passenger_id = req.user._id;
+
+        const payment = await PaymentModel.findOne({
+            gatewayPaymentId: paymentId
+        });
+
+        if (!payment) {
+            return res.status(200).json({
+                success: true,
+                paymentStatus: "pending",
+                bookingCreated: false
+            });
+        }
+
+        if (payment.status !== "captured") {
+            return res.status(200).json({
+                success: true,
+                paymentStatus: payment.status,
+                bookingCreated: false
+            });
+        }
+
+        const booking = await BookedRideModel.findOne({
+            payment_id: payment._id,
+            passenger_id
+        });
+
+        if (!booking) {
+            return res.status(200).json({
+                success: true,
+                paymentStatus: payment.status,
+                bookingCreated: false
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            paymentStatus: payment.status,
+            bookingCreated: true,
+            bookingId: booking._id
+        });
+    }
+);
 
 
 
