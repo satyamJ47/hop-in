@@ -13,7 +13,7 @@ export default function SearchForm() {
     const [date, setDate] = useState("");
     const navigate = useNavigate();
 
-    console.log("Search Form")
+    // console.log("Search Form")
   
     function handleSearch() {
         const params = new URLSearchParams({

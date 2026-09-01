@@ -1,7 +1,7 @@
 import SearchForm from "./SearchForm";
 
 export default function HeroSection() {
-    console.log("hero");
+    // console.log("hero");
   return (
     <section className="bg-background">
       <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-7xl flex-col items-center justify-center px-6 text-center">

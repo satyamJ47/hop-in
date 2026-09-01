@@ -18,7 +18,7 @@ export default function RideDetailsPage() {
         async function fetchRide() {
             try {
                 const data = await getRide(rideId);
-                console.log(data)
+                // console.log(data)
                 setRide(data.ride);
             } catch (err) {
                 setError(

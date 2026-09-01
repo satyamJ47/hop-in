@@ -2,7 +2,7 @@ import api from "./axios";
 // const token = "fakeTokenTest"
 
 export async function createOrder(hold_id) {
-    console.log("create-order api")
+    // console.log("create-order api")
     const response = await api.post("/payment/create-order", {
         hold_id,
     },
@@ -13,7 +13,7 @@ export async function createOrder(hold_id) {
     // }
     );
 
-    console.log(response)
+    // console.log(response)
 
     return response.data;
 }

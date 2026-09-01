@@ -23,7 +23,7 @@ export default function MyBookingsPage() {
 
         try{
             const data = activeTab==="upcoming" ? await getUpcomingBookings(cursor) : await getBookingHistory(cursor);
-            console.log(data)
+            // console.log(data)
             if (cursor) {
                 setBookings((prev) => [
                     ...prev,
