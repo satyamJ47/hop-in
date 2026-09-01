@@ -116,7 +116,6 @@ paymentRouter.post("/webhook", async (req, res) => {
 paymentRouter.get(
     "/booking-status/:paymentId",
     auth,
-    allowRole("passenger"),
     async (req, res) => {
 
         const { paymentId } = req.params;
@@ -163,7 +162,5 @@ paymentRouter.get(
         });
     }
 );
-
-
 
 module.exports = {paymentRouter}

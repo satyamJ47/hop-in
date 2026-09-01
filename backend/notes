@@ -31,3 +31,73 @@ npm run worker
 # Terminal 3
 cd ../frontend
 npm run dev
+
+
+________________________________________________
+plan
+Our refactor order
+
+I recommend we do it in this order:
+
+1. Create UserModel
+
+2. Update schemas
+
+Ride
+Vehicle
+SeatHold
+BookedRide
+Payment (if needed)
+
+3. Change signup/signin
+
+Passenger signup → User signup
+Passenger signin → User signin
+
+4. Delete Driver signup/signin
+
+5. Update auth middleware
+
+JWT contains only:
+
+{
+    _id
+}
+
+6. Go through every passenger endpoint
+
+7. Go through every driver endpoint
+
+8. Fix helper functions such as getBookings()
+
+9. Fix populate() references
+
+10. Test the entire flow
+
+Signup
+ ↓
+Login
+ ↓
+Search
+ ↓
+Book
+ ↓
+Payment
+ ↓
+Booking details
+ ↓
+Offer a Ride
+ ↓
+Create vehicle
+ ↓
+Create ride
+
+Then finally:
+
+11. Password hashing
+
+sat 29 aug
+refactored driver.js file 
+testing remaining
+test refactored apis
+

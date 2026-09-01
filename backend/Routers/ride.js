@@ -1,6 +1,5 @@
 const {Router} = require("express");
 const { auth } = require("../Middlewares/auth");
-const { allowRole } = require("../Middlewares/allowRole");
 const { BookedRideModel, RideModel, SeatHoldModel, PaymentModel } = require("../db");
 const mongoose = require("mongoose");
 const { calculateRefund } = require("../utils/refundCalculator");
@@ -18,55 +17,7 @@ rideRouter.get("/",(req,res)=>{
     res.send("ride router")
 })
 
-// rideRouter.post("/book",auth,allowRole("passenger"),async (req,res)=>{
-
-//     // we can create session with any model example RideModel or BookedRideModel internally it uses mongoose.connection.startSession() 
-//     // or we can use mongoose.startSession() for simplicity
-//     const session = await RideModel.startSession();
-//     session.startTransaction();
-
-//     try{
-//         const {_id,booked_seats} = req.body
-//         const passenger_id = req.user._id
-
-//         if (!booked_seats || booked_seats <= 0) {
-//             throw new Error("Invalid seats");
-//         }
-
-//         const ride = await RideModel.findOneAndUpdate(
-//             {_id,available_seats:{$gte: booked_seats}},
-//             {$inc:{available_seats:-booked_seats}},
-//             // {returnDocument: "after"},
-//             { new: true, session }
-//         );
-
-//         console.log(ride)
-    
-//         if (!ride) throw new Error("Not enough seats");
-    
-//         const fare = ride.fare * booked_seats; 
-//         await BookedRideModel.create([{
-//             ride_id:_id,
-//             passenger_id,
-//             booked_seats,
-//             fare,
-//             status:"booked"
-//         }],{ session })
-
-//         await session.commitTransaction();
-//         res.status(200).json({message:"Ride Booked"})
-
-//     }
-//     catch(err){
-//         await session.abortTransaction();
-//         res.status(400).json({ message: err.message });
-//     }
-//     finally{
-//         session.endSession();
-//     }
-
-// })
-rideRouter.post("/book",auth,validate(bookSchema),allowRole("passenger"),async (req,res)=>{
+rideRouter.post("/book",auth,validate(bookSchema),async (req,res)=>{
 
     // we can create session with any model example RideModel or BookedRideModel internally it uses mongoose.connection.startSession() 
     // or we can use mongoose.startSession() for simplicity
@@ -100,7 +51,7 @@ rideRouter.post("/book",auth,validate(bookSchema),allowRole("passenger"),async (
     }
 });
 
-rideRouter.post("/cancel",auth,validate(cancellSchema),allowRole("passenger"),async (req,res)=>{
+rideRouter.post("/cancel",auth,validate(cancellSchema),async (req,res)=>{
 
     const session = await mongoose.startSession();
     try{
@@ -168,29 +119,6 @@ rideRouter.post("/cancel",auth,validate(cancellSchema),allowRole("passenger"),as
     }
     
 })
-
-//pagination search -> traditional method
-// rideRouter.post("/search",auth,allowRole("passenger"),async (req,res)=>{
-//     const{src,dest,date,page} = req.query;
-//     console.log(src, dest, date)
-//     const start = new Date(`${date}T00:00:00+05:30`)
-//     const end = new Date(`${date}T23:59:59+05:30`);
-
-//     console.log(src, dest, start, end)
-
-//     const rides = await RideModel.find({
-//         src,
-//         dest,
-//         departure_time:{$gte:start,$lte:end}
-//     }) 
-//     .sort({ departure_time: 1,_id:1 })
-//     .skip(page * 3)
-//     .limit(3);
-
-//     return res.json(rides);
-
-// })
-
 
 // infinite scroll -> optimized search
 rideRouter.get("/search",validate(searchRideSchema,"query") ,async (req, res) => {

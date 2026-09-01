@@ -6,6 +6,9 @@ async function handlePaymentSuccess(payment) {
 
     const razorpayOrderId = payment.order_id;
     const razorpayPaymentId = payment.id;
+    console.log("___________________");
+    console.log(razorpayOrderId,razorpayPaymentId);
+    console.log("___________________");
 
     const session = await mongoose.startSession();
 

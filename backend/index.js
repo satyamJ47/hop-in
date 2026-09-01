@@ -7,16 +7,25 @@ const express = require('express')
 const app = express()
 
 const cors = require("cors");
+
+app.use((req, res, next) => {
+    console.log("REQUEST:", req.method, req.path);
+    console.log("ORIGIN:", req.headers.origin);
+    next();
+});
+
 app.use(cors({
     origin: process.env.FRONTEND_URL,
     credentials: true
 }));
+console.log("FRONTEND_URL:", process.env.FRONTEND_URL);
 
 const PORT = process.env.PORT || 3000
 
 
-const {driverRouter} = require("./Routers/driver")
+const {driverProfileRouter} = require("./Routers/driver")
 const {passengerRouter} = require("./Routers/passenger")
+const {userRouter} = require("./Routers/user")
 const {rideRouter} = require("./Routers/ride")
 const {vehicleRouter} = require("./Routers/vehicle")
 const { paymentRouter } = require('./Routers/payment')
@@ -35,19 +44,21 @@ app.use(
   express.raw({ type: "application/json" })
 );
 app.use(express.json())
-app.use("/driver",driverRouter)
+app.use("/driver-profile",driverProfileRouter)
 app.use("/passenger",passengerRouter)
+app.use("/user",userRouter)
 app.use("/ride",rideRouter)
 app.use("/vehicle",vehicleRouter)
 app.use("/payment",paymentRouter)
 
 
 app.get('/', (req, res) => {
-  res.send('Welcome to Blah Blah! We make sure you have easy and hassle free travel experience')
+  res.send('Welcome to Blah Blah 2! We make sure you have easy and hassle free travel experience')
 })
 
 
 app.get("/health", (req, res) => {
+  console.log("health enpoint hit")
   res.status(200).json({
     status: "UP",
     service: "hop-in-api",
@@ -56,9 +67,13 @@ app.get("/health", (req, res) => {
 });
 
 app.get("/version", (req, res) => {
+  console.log("version")
+  const ans = req.body.a+req.body.b;
+  console.log(ans);
     res.json({
         version: "1.0.1",
-        deployed: "CI/CD Test"
+        deployed: "CI/CD Test",
+        ans
     });
 });
 

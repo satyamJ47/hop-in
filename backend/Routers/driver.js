@@ -1,80 +1,115 @@
 const {Router} = require('express')
 
-const driverRouter = Router()
-const {DriverModel,RideModel, VehicleModel} = require('../db')
+const driverProfileRouter = Router()
+const {DriverProfileModel,RideModel, VehicleModel} = require('../db')
 
 const jwt = require('jsonwebtoken');
 
 
 const {auth} = require('../Middlewares/auth');
-const { allowRole } = require('../Middlewares/allowRole');
+
 const validate = require("../Middlewares/validation");
 const { signupSchema, signinSchema } = require("../validation/driver.validation");
 const getRides = require('../services/rides.service');
 
-driverRouter.get("/",(req,res)=>{
-    console.log("driver")
-    res.send("driver router")
-})
+driverProfileRouter.get("/", auth, async (req, res) => {
+    const user_id = req.user._id;
 
-driverRouter.post("/signup",validate(signupSchema),async (req,res)=>{
-    const name = req.body.name;
-    const email = req.body.email;
-    const password = req.body.password;
-    const duplicateCheck  =  await DriverModel.findOne({ email: email}).exec();
-    // console.log(duplicateCheck)
-    if(duplicateCheck!=null){
-       return res.status(200).json({message:'Email already existed'})
+    const driverProfile = await DriverProfileModel.findOne({
+        user_id
+    });
+
+    if (!driverProfile) {
+        return res.status(404).json({
+            message: "Driver profile not found"
+        });
     }
 
-    const response = await DriverModel.create({ name,email,password });
-    console.log(response);
-    return res.json({message:`Driver ${name} is created.`})
-   
-})
+    return res.status(200).json({
+        driverProfile
+    });
+});
 
-driverRouter.post("/signin",validate(signinSchema),async (req,res)=>{
-    const email = req.body.email;
-    const password = req.body.password;
-    const response = await DriverModel.findOne({email,password}).exec();
-    if(response == null){
-        return res.json({message:"Incorrect email or password."})
+driverProfileRouter.post("/", auth, async (req, res) => {
+    const user_id = req.user._id;
+
+    // check whether profile already exists
+    const existingProfile = await DriverProfileModel.findOne({ user_id });
+
+    if (existingProfile) {
+        return res.status(409).json({
+            message: "Driver profile already exists"
+        });
     }
-    console.log(response)
-    const token = jwt.sign({
-        _id:response._id.toString(),
-        role:"driver"
-    }, process.env.JWT_SECRET);
-    return res.status(200).json({token:token})
-})
 
+    const driverProfile = await DriverProfileModel.create({
+        user_id
+    });
+
+    return res.status(201).json({
+        message: "Driver profile created",
+        driverProfile
+    });
+});
 
 // driver's rides Endpoints -> might move to new file 
 
 // driver creates ride
-driverRouter.post("/ride",auth, allowRole("driver") ,async (req,res)=>{
+driverProfileRouter.post("/ride",auth,async (req,res)=>{
     const {vehicle_id,src,dest,departure_time,fare} = req.body
-    const driver_id = req.user._id
-    
-    // const vehicle = await VehicleModel.findById(vehicle_id).exec();
+    const user_id = req.user._id
+
+    const driverProfile = await DriverProfileModel.findOne({
+        user_id
+    });
+
+    if (!driverProfile) {
+        return res.status(404).json({
+            message: "Driver profile not found"
+        });
+    }
+
+    const driver_id = driverProfile._id;
+
     const vehicle = await VehicleModel.findOne({_id:vehicle_id,owner:driver_id}).exec();
     console.log(vehicle)
-    if(vehicle == null)return res.json({message:"Invalid vehicle"})
+    if (vehicle == null) {
+        return res.status(404).json({
+            message: "Invalid vehicle"
+        });
+    }
     const available_seats = vehicle.seats
     const response = await RideModel.create({driver_id,vehicle_id,src,dest,departure_time,available_seats,fare})
-    return res.json({message:"Ride created"},response)
+    return res.status(201).json({
+        message: "Ride created",
+        ride: response
+    });
 })
 
 // driver edit ride -> needs to update in users as well
 // but if driver change price after one user has booked and paid old price then old booked ticket should not be change for price just if he uses different vehicle then it can be changed in ticket.
-driverRouter.put("/ride",auth,allowRole("driver"),async (req,res)=>{
+driverProfileRouter.put("/ride",auth,async (req,res)=>{
     const {_id,vehicle_id,src,dest,departure_time,fare} = req.body
-    const driver_id = req.user._id
+    
+    const user_id = req.user._id
+
+    const driverProfile = await DriverProfileModel.findOne({
+        user_id
+    });
+
+    if (!driverProfile) {
+        return res.status(404).json({
+            message: "Driver profile not found"
+        });
+    }
+
+    const driver_id = driverProfile._id;
+
     const vehicle = await VehicleModel.findOne({_id:vehicle_id,owner:driver_id})
     if(vehicle == null)return res.json({message:"Invalid Vehicle"});
     const available_seats = vehicle.seats
 
-    const response = await RideModel.updateOne({ _id }, {driver_id,vehicle_id,src,dest,departure_time,available_seats,fare});
+    const response = await RideModel.updateOne({ _id, driver_id }, {driver_id,vehicle_id,src,dest,departure_time,available_seats,fare});
     console.log(response)
     if (response.modifiedCount > 0) {
         return res.json({ message: "Ride updated" });
@@ -84,10 +119,21 @@ driverRouter.put("/ride",auth,allowRole("driver"),async (req,res)=>{
 
 // NEED TO WORK
 // driver deletes ride -> needs to cancel ride from driver side and update in users as well
-driverRouter.delete("/ride",auth,allowRole("driver"),async(req,res)=>{
+driverProfileRouter.delete("/ride",auth,async(req,res)=>{
     console.log("delete ride endpoint")
     const {_id} = req.body
-    const driver_id = req.user._id
+    const user_id = req.user._id
+
+    const driverProfile = await DriverProfileModel.findOne({
+        user_id
+    });
+    if (!driverProfile) {
+        return res.status(404).json({
+            message: "Driver profile not found"
+        });
+    }
+
+    const driver_id = driverProfile._id;
     const response = await RideModel.deleteOne({_id,driver_id});
     console.log(response)
     if(response.deletedCount == 0)return res.json({message:"Invalid Ride"})
@@ -96,15 +142,37 @@ driverRouter.delete("/ride",auth,allowRole("driver"),async(req,res)=>{
 
 
 // get list of rides created by driver
-driverRouter.get("/ride",auth,allowRole("driver"), async(req,res)=>{
-    const driver_id  = req.user._id
+driverProfileRouter.get("/ride",auth,async(req,res)=>{
+    const user_id = req.user._id
+    const driverProfile = await DriverProfileModel.findOne({
+        user_id
+    });
+    if (!driverProfile) {
+        return res.status(404).json({
+            message: "Driver profile not found"
+        });
+    }
+
+    const driver_id = driverProfile._id;
     const rides = await RideModel.find({driver_id})
     if(rides.length == 0)return res.json({message:"No rides created. Please add ride."});
     return res.json({Number:rides.length,rides})
 })
 
-driverRouter.get("/rides/upcoming",auth,allowRole("driver"), async(req,res)=>{
-    const driver_id  = req.user._id
+driverProfileRouter.get("/rides/upcoming",auth, async(req,res)=>{
+    const user_id = req.user._id
+
+    const driverProfile = await DriverProfileModel.findOne({
+        user_id
+    });
+
+    if (!driverProfile) {
+        return res.status(404).json({
+            message: "Driver profile not found"
+        });
+    }
+
+    const driver_id = driverProfile._id;
     const {cursor,limit=5} = req.query;
     let query = { driver_id, departure_time:{$gt:new Date()} }
     
@@ -115,8 +183,20 @@ driverRouter.get("/rides/upcoming",auth,allowRole("driver"), async(req,res)=>{
 })
 
 
-driverRouter.get("/rides/history",auth,allowRole("driver"), async(req,res)=>{
-    const driver_id  = req.user._id
+driverProfileRouter.get("/rides/history",auth, async(req,res)=>{
+    const user_id = req.user._id
+
+    const driverProfile = await DriverProfileModel.findOne({
+        user_id
+    });
+
+    if (!driverProfile) {
+        return res.status(404).json({
+            message: "Driver profile not found"
+        });
+    }
+
+    const driver_id = driverProfile._id;
     const {cursor,limit=5} = req.query;
     const options = {cursor,type:"history",limit}
     let query = { driver_id, departure_time:{$lt:new Date()} }
@@ -127,5 +207,5 @@ driverRouter.get("/rides/history",auth,allowRole("driver"), async(req,res)=>{
 })
 
 module.exports = {
-    driverRouter: driverRouter
+    driverProfileRouter: driverProfileRouter
 }
