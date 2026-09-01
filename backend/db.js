@@ -2,22 +2,73 @@ const mongoose = require("mongoose")
 const Schema = mongoose.Schema
 const ObjectId = Schema.Types.ObjectId
 
-const driverSchema = new Schema({
-    name:String,
-    email:String,
-    password:String,
-},{ timestamps: true })
+// const driverSchema = new Schema({
+//     name:String,
+//     email:String,
+//     password:String,
+// },{ timestamps: true })
 
-const passengerSchema = new Schema({
-    name:String,
-    email:String,
-    password:String,
-},{ timestamps: true })
+// const passengerSchema = new Schema({
+//     name:String,
+//     email:String,
+//     password:String,
+// },{ timestamps: true })
+
+const userSchema = new Schema({
+    name: {
+        type: String,
+        required: true,
+        trim: true
+    },
+
+    email: {
+        type: String,
+        required: true,
+        unique: true,
+        lowercase: true,
+        trim: true
+    },
+
+    password: {
+        type: String,
+        required: true
+    }
+}, { timestamps: true });
+
+const driverProfileSchema = new Schema({
+    user_id: {
+        type: ObjectId,
+        ref: "user",
+        required: true,
+        unique: true
+    },
+
+    total_earnings: {
+        type: Number,
+        default: 0
+    },
+
+    completed_rides: {
+        type: Number,
+        default: 0
+    },
+
+    rating: {
+        type: Number,
+        default: 0
+    },
+
+    total_ratings: {
+        type: Number,
+        default: 0
+    }
+
+}, { timestamps: true });
 
 const rideSchema = new Schema({
      driver_id: {
         type: ObjectId,
-        ref: "driver",
+        ref: "driver-profile",
         required: true
     },
 
@@ -50,7 +101,7 @@ const seatHoldSchema = new Schema({
 
   passenger_id: {
     type: Schema.Types.ObjectId,
-    ref: "passenger",
+    ref: "user",
     required: true
   },
 
@@ -91,7 +142,7 @@ const bookedRideSchema = new Schema({
 
   passenger_id: {
     type: ObjectId,
-    ref: "passenger",
+    ref: "user",
     required: true
   },
 
@@ -192,7 +243,7 @@ const paymentSchema = new Schema({
 const vehicleSchema = new Schema({
     owner: {
         type: ObjectId,
-        ref: "driver",
+        ref: "driver-profile",
         required: true
     },
     veh_no: String,
@@ -203,8 +254,10 @@ const vehicleSchema = new Schema({
     seats: Number,
 },{ timestamps: true })
 
-const DriverModel = mongoose.model("driver",driverSchema);
-const PassengerModel = mongoose.model("passenger",passengerSchema);
+// const DriverModel = mongoose.model("driver",driverSchema);
+// const PassengerModel = mongoose.model("passenger",passengerSchema);
+const UserModel = mongoose.model("user",userSchema);
+const DriverProfileModel = mongoose.model("driver-profile",driverProfileSchema);
 const RideModel = mongoose.model("ride",rideSchema);
 const SeatHoldModel = mongoose.model("seat-hold",seatHoldSchema);
 const PaymentModel = mongoose.model("payment",paymentSchema);
@@ -212,8 +265,8 @@ const BookedRideModel = mongoose.model("booked-ride",bookedRideSchema);
 const VehicleModel = mongoose.model("vehicle",vehicleSchema);
 
 module.exports = {
-    DriverModel,
-    PassengerModel,
+    UserModel,
+    DriverProfileModel,
     RideModel,
     SeatHoldModel,
     PaymentModel,
