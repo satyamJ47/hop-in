@@ -30,14 +30,14 @@ export default function LoginPage() {
                 password,
             });
 
-            console.log("Signin response:", data);
+            // console.log("Signin response:", data);
             // localStorage.setItem("token", data.token);
             toast.success("Login successful");
             login(data.token);
 
             navigate(location.state?.from || "/");
         } catch (err) {
-            console.log(err)
+            // console.log(err)
             setError(
                 err.response?.data?.message ||
                 "Failed to sign in"

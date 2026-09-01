@@ -1,8 +1,9 @@
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { CarFront, User } from "lucide-react";
 import { toast } from "sonner";
+import { getDriverProfile } from "@/api/diver";
 
 export default function Navbar() {
     const { isLoggedIn, logout } = useAuth();
@@ -11,6 +12,30 @@ export default function Navbar() {
         logout();
         toast.success("Logged out successfully");
     }
+
+    const navigate = useNavigate();
+    const handleOfferRide = async () => {
+        try {
+            await getDriverProfile();
+
+            // Driver Profile exists
+            navigate("/driver-profile");
+
+        } catch (err) {
+            if (err.response?.status === 404) {
+                // No driver profile
+                navigate("/become-driver");
+                return;
+            }
+
+            if (err.response?.status === 401) {
+                navigate("/login");
+                return;
+            }
+
+            console.error("Failed to check driver profile:", err);
+        }
+    };
 
     return (
         <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -44,14 +69,9 @@ export default function Navbar() {
                         Search Rides
                     </NavLink>
 
-                    <Link
-                        to="/become-driver"
-                        className="ml-2"
-                    >
-                        <Button variant="outline">
-                            Become Driver
-                        </Button>
-                    </Link>
+                    <Button variant="outline" onClick={handleOfferRide}>
+                        Offer a Ride
+                    </Button>
 
                     {isLoggedIn ? (
                         <>

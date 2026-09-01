@@ -28,7 +28,7 @@ export default function SignupPage() {
                 password,
             });
 
-            console.log("Signup response:", data);
+            // console.log("Signup response:", data);
 
             toast.success("Account created successfully");
 

@@ -53,7 +53,7 @@ app.use("/payment",paymentRouter)
 
 
 app.get('/', (req, res) => {
-  res.send('Welcome to Blah Blah 2! We make sure you have easy and hassle free travel experience')
+  res.send('Welcome to Blah Blah! We make sure you have easy and hassle free travel experience')
 })
 
 
@@ -68,12 +68,10 @@ app.get("/health", (req, res) => {
 
 app.get("/version", (req, res) => {
   console.log("version")
-  const ans = req.body.a+req.body.b;
   console.log(ans);
     res.json({
         version: "1.0.1",
         deployed: "CI/CD Test",
-        ans
     });
 });
 

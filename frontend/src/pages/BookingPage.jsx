@@ -22,7 +22,7 @@ export default function BookingPage() {
     const {isLoggedIn} = useAuth();
 
     useEffect(()=>{
-        console.log("BookingPage effect");
+        // console.log("BookingPage effect");
         async function fetchRide() {
             try{
                 const data = await getRide(rideId);
@@ -82,11 +82,11 @@ export default function BookingPage() {
 
             // step 1: hold seat
             const holdData = await bookRide({rideId,bookedSeats});
-            console.log("Booking Respose",holdData)
+            // console.log("Booking Respose",holdData)
 
             // step 2: create order
             const order = await createOrder(holdData.hold_id);
-            console.log("Create Order",order)
+            // console.log("Create Order",order)
 
             // step 3: Open Razorpay checkout
             const options = {
@@ -97,7 +97,7 @@ export default function BookingPage() {
 
                 handler: async function (response) {
 
-                    console.log("Razorpay payment:", response);
+                    // console.log("Razorpay payment:", response);
 
                     try {
 

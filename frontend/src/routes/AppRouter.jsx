@@ -14,6 +14,9 @@ import MyBookingsPage from "@/pages/MyBookingsPage";
 import BookingDetailsPage from "@/pages/BookingDetailsPage";
 import ProfilePage from "@/pages/ProfilePage";
 import RideDetailsPage from "@/pages/RideDetailsPage";
+import BecomeDriverPage from "@/pages/BecomeDriverPage";
+import DriverProfilePage from "@/pages/DriverProfilePage";
+import CreateRidePage from "@/pages/CreateRidePage";
 
 const router = createBrowserRouter([
   {
@@ -70,6 +73,30 @@ const router = createBrowserRouter([
             element:(
                 <ProtectedRoute>
                     <ProfilePage/>
+                </ProtectedRoute>
+            )
+        },
+        {
+            path: "become-driver",
+            element:(
+                <ProtectedRoute>
+                    <BecomeDriverPage/>
+                </ProtectedRoute>
+            )
+        },
+        {
+            path: "driver-profile",
+            element:(
+                <ProtectedRoute>
+                    <DriverProfilePage/>
+                </ProtectedRoute>
+            )
+        },
+        {
+            path: "create-ride",
+            element:(
+                <ProtectedRoute>
+                    <CreateRidePage/>
                 </ProtectedRoute>
             )
         },

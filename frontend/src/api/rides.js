@@ -40,7 +40,7 @@ export async function bookRide({rideId,bookedSeats}){
 
 export async function getUpcomingBookings(cursor) {
     
-  const response = await api.get("/passenger/bookings/upcoming",{
+  const response = await api.get("/user/bookings/upcoming",{
       params:{
         cursor,
       },
@@ -51,7 +51,7 @@ export async function getUpcomingBookings(cursor) {
 
 export async function getBookingHistory(cursor) {
     
-  const response = await api.get("/passenger/bookings/history",{
+  const response = await api.get("/user/bookings/history",{
       params:{
         cursor,
       },
@@ -61,7 +61,7 @@ export async function getBookingHistory(cursor) {
 }
 
 export async function getBookingDetails(bookingId) {
-    const response = await api.get(`/passenger/bookings/${bookingId}`);
+    const response = await api.get(`/user/bookings/${bookingId}`);
 
     return response.data;
 }
