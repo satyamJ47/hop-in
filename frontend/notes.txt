@@ -165,4 +165,3 @@ Booking page → accessible, but booking action requires login
 My Bookings → protected
 Profile → protected
 Driver dashboard → protected
-
