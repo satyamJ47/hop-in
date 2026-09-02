@@ -68,7 +68,6 @@ app.get("/health", (req, res) => {
 
 app.get("/version", (req, res) => {
   console.log("version")
-  console.log(ans);
     res.json({
         version: "1.0.1",
         deployed: "CI/CD Test",
