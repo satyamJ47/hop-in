@@ -61,5 +61,19 @@ services:
 
     restart: unless-stopped
 
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+
+    env_file:
+      - .env
+
+    depends_on:
+      api:
+        condition: service_healthy
+
+    restart: unless-stopped
+
 volumes:
   redis-data:
