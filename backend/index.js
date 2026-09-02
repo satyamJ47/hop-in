@@ -14,11 +14,23 @@ app.use((req, res, next) => {
     next();
 });
 
+// app.use(cors({
+//     origin: process.env.FRONTEND_URL,
+//     credentials: true
+// }));
+// console.log("FRONTEND_URL:", process.env.FRONTEND_URL);
+
+// changed for multiple frontend URLs
+const allowedOrigins = [
+    "http://localhost:5173",
+    "https://hop-in.in",
+    "https://www.hop-in.in",
+];
+
 app.use(cors({
-    origin: process.env.FRONTEND_URL,
+    origin: allowedOrigins,
     credentials: true
 }));
-console.log("FRONTEND_URL:", process.env.FRONTEND_URL);
 
 const PORT = process.env.PORT || 3000
 
