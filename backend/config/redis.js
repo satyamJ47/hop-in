@@ -1,8 +1,10 @@
 const { Redis } = require("ioredis");
 
-console.log(process.env.REDIS_HOST)
-console.log(process.env.REDIS_PORT)
-const connection = new Redis({
+const connection = process.env.REDIS_URL
+    ? new Redis(process.env.REDIS_URL, {
+        maxRetriesPerRequest: null
+    })
+    : new Redis({
     host: process.env.REDIS_HOST,
     port: Number(process.env.REDIS_PORT),
     maxRetriesPerRequest: null
