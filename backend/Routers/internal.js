@@ -3,6 +3,7 @@ const router = express.Router();
 
 const expireSeatHolds = require("../jobs/seatHoldExpiryJob");
 const { processRefund } = require("../services/refund.service");
+const { createTask } = require("../config/cloudTasks");
 
 const INTERNAL_JOB_SECRET = process.env.INTERNAL_JOB_SECRET;
 
@@ -28,6 +29,30 @@ router.post("/health", verifyInternalJob, (req, res) => {
         success: true,
         message: "Cloud Tasks can reach Cloud Run"
     });
+});
+
+router.post("/test-cloud-task", verifyInternalJob, async (req, res) => {
+    try {
+        const task = await createTask({
+            path: "/internal/health",
+            payload: {
+                test: true
+            }
+        });
+
+        return res.status(200).json({
+            success: true,
+            task: task.name
+        });
+    }
+    catch (err) {
+        console.error("Cloud Task creation failed:", err);
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to create Cloud Task"
+        });
+    }
 });
 
 router.post("/expire-seat-holds", verifyInternalJob, async (req, res) => {
