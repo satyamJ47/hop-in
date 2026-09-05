@@ -161,8 +161,7 @@ userRouter.get("/bookings/:id",auth,async (req,res)=>{
             }
             : null,
     };
-
-
+     
     return res.status(200).json(response);
 })
 

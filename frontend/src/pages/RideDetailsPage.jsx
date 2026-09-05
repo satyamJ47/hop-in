@@ -18,7 +18,7 @@ export default function RideDetailsPage() {
         async function fetchRide() {
             try {
                 const data = await getRide(rideId);
-                // console.log(data)
+                console.log(data)
                 setRide(data.ride);
             } catch (err) {
                 setError(
@@ -64,54 +64,54 @@ export default function RideDetailsPage() {
 
                 {/* Route & Departure */}
                 <Card>
-    <CardContent className="p-6">
+                    <CardContent className="p-6">
 
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
 
-            <div>
-                <h2 className="text-2xl font-bold">
-                    {ride.src} → {ride.dest}
-                </h2>
+                            <div>
+                                <h2 className="text-2xl font-bold">
+                                    {ride.src} → {ride.dest}
+                                </h2>
 
-                <p className="mt-2 text-muted-foreground">
-                    {format(
-                        new Date(ride.departure_time),
-                        "dd MMM yyyy • hh:mm a"
-                    )}
-                </p>
-            </div>
+                                <p className="mt-2 text-muted-foreground">
+                                    {format(
+                                        new Date(ride.departure_time),
+                                        "dd MMM yyyy • hh:mm a"
+                                    )}
+                                </p>
+                            </div>
 
-            <div className="sm:text-right">
-                <p className="text-sm text-muted-foreground">
-                    Fare per seat
-                </p>
+                            <div className="sm:text-right">
+                                <p className="text-sm text-muted-foreground">
+                                    Fare per seat
+                                </p>
 
-                <p className="text-2xl font-bold">
-                    ₹{ride.fare}
-                </p>
+                                <p className="text-2xl font-bold">
+                                    ₹{ride.fare}
+                                </p>
 
-                <p className="mt-1 text-sm text-muted-foreground">
-                    {ride.available_seats} seats available
-                </p>
-            </div>
+                                <p className="mt-1 text-sm text-muted-foreground">
+                                    {ride.available_seats} seats available
+                                </p>
+                            </div>
 
-        </div>
+                        </div>
 
-        <div className="mt-6 border-t pt-5">
-    <Button
-        className="w-full"
-        size="lg"
-        onClick={() => navigate(`/rides/${rideId}/book`)}
-        disabled={ride.available_seats === 0}
-    >
-        {ride.available_seats === 0
-            ? "Sold Out"
-            : "Book Ride"}
-    </Button>
-</div>
+                        <div className="mt-6 border-t pt-5">
+                            <Button
+                                className="w-full"
+                                size="lg"
+                                onClick={() => navigate(`/rides/${rideId}/book`)}
+                                disabled={ride.available_seats === 0}
+                            >
+                                {ride.available_seats === 0
+                                    ? "Sold Out"
+                                    : "Book Ride"}
+                            </Button>
+                        </div>
 
-    </CardContent>
-</Card>
+                    </CardContent>
+                </Card>
 
 
                 {/* Driver */}
@@ -137,7 +137,7 @@ export default function RideDetailsPage() {
                                     </p>
 
                                     <p className="font-medium">
-                                        {ride.driver_id.name}
+                                        {ride.driver_id.user_id.name}
                                     </p>
                                 </div>
                             </div>
