@@ -2,7 +2,7 @@ const { CloudTasksClient } = require("@google-cloud/tasks");
 
 const client = new CloudTasksClient();
 
-const PROJECT_ID = process.env.GOOGLE_CLOUD_PROJECT;
+const PROJECT_ID = "hop-in-ridebookingwebapp";
 const LOCATION = "asia-southeast1";
 const QUEUE = "refund-queue";
 
