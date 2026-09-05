@@ -23,6 +23,13 @@ function verifyInternalJob(req, res, next) {
     next();
 }
 
+router.post("/health", verifyInternalJob, (req, res) => {
+    return res.status(200).json({
+        success: true,
+        message: "Cloud Tasks can reach Cloud Run"
+    });
+});
+
 router.post("/expire-seat-holds", verifyInternalJob, async (req, res) => {
     try {
         console.log("Seat hold expiry triggered");
