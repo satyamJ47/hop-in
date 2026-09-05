@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@google-cloud/tasks": "^7.0.0",
     "bullmq": "^5.79.2",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
@@ -16,11 +17,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-   "test": "echo \"No tests configured\"",
-
+    "test": "echo \"No tests configured\"",
     "start": "node index.js",
     "worker": "node workers/worker.js",
-
     "dev": "nodemon -L index.js",
     "worker:dev": "nodemon -L workers/worker.js"
   },
