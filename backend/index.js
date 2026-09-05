@@ -34,6 +34,7 @@ app.use(cors({
 
 const PORT = process.env.PORT || 3000
 
+const internalRouter = require("./Routers/internal");
 
 const {driverProfileRouter} = require("./Routers/driver")
 const {passengerRouter} = require("./Routers/passenger")
@@ -62,6 +63,7 @@ app.use("/user",userRouter)
 app.use("/ride",rideRouter)
 app.use("/vehicle",vehicleRouter)
 app.use("/payment",paymentRouter)
+app.use("/internal", internalRouter);
 
 
 app.get('/', (req, res) => {

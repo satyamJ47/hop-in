@@ -140,9 +140,13 @@ async function handlePaymentFailure(payment) {
 
         await session.commitTransaction();
     }
-    catch(err){
-      await session.abortTransaction()
-      console.error(err)
+    catch (err) {
+        if (session.inTransaction()) {
+            await session.abortTransaction();
+        }
+
+        console.error("Payment failure handling failed:", err);
+        throw err;
     }
     finally{
       session.endSession()
