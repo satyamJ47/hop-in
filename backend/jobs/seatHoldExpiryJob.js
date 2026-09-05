@@ -57,7 +57,8 @@ async function expireSeatHolds() {
                 hold.ride_id,
                 {
                     $inc: {
-                        available_seats: hold.seats
+                        available_seats: -bookedSeats,
+                        booked_seats: bookedSeats,
                     }
                 },
                 {

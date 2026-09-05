@@ -57,13 +57,13 @@ app.use(
   express.raw({ type: "application/json" })
 );
 app.use(express.json())
+app.use("/internal", internalRouter);
 app.use("/driver-profile",driverProfileRouter)
 app.use("/passenger",passengerRouter)
 app.use("/user",userRouter)
 app.use("/ride",rideRouter)
 app.use("/vehicle",vehicleRouter)
 app.use("/payment",paymentRouter)
-app.use("/internal", internalRouter);
 
 
 app.get('/', (req, res) => {
