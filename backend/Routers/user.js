@@ -10,7 +10,7 @@ const userRouter = Router()
 
 userRouter.get("/",(req,res)=>{
     console.log("user get route hit")
-    return res.json({message:"user router"});
+    return res.json({message:"user router endpoint test ci/cd"});
 })
 
 userRouter.post("/signup",validate(signupSchema),async (req,res)=>{
