@@ -4,7 +4,26 @@ const router = express.Router();
 const expireSeatHolds = require("../jobs/seatHoldExpiryJob");
 const { processRefund } = require("../services/refund.service");
 
-router.post("/expire-seat-holds", async (req, res) => {
+const INTERNAL_JOB_SECRET = process.env.INTERNAL_JOB_SECRET;
+
+if (!INTERNAL_JOB_SECRET) {
+    throw new Error("INTERNAL_JOB_SECRET is not configured");
+}
+
+function verifyInternalJob(req, res, next) {
+    const secret = req.headers["x-internal-job-secret"];
+
+    if (!secret || secret !== INTERNAL_JOB_SECRET) {
+        return res.status(401).json({
+            success: false,
+            message: "Unauthorized"
+        });
+    }
+
+    next();
+}
+
+router.post("/expire-seat-holds", verifyInternalJob, async (req, res) => {
     try {
         console.log("Seat hold expiry triggered");
 
@@ -25,7 +44,7 @@ router.post("/expire-seat-holds", async (req, res) => {
     }
 });
 
-router.post("/refund", async (req, res) => {
+router.post("/refund", verifyInternalJob, async (req, res) => {
     try {
         console.log("Refund job triggered");
         console.log(req.body);
