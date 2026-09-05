@@ -10,6 +10,7 @@ const { createSeatHold } = require("../services/booking.service");
 const refundQueue = require("../queues/refund.queue");
 const validate = require("../Middlewares/validation");
 const { bookSchema, cancellSchema, searchRideSchema } = require("../validation/driver.validation");
+const { createTask } = require("../config/cloudTasks");
 
 const rideRouter = Router();
 
@@ -68,35 +69,47 @@ rideRouter.post("/cancel",auth,validate(cancellSchema),async (req,res)=>{
         console.log(gatewayPaymentId,refundAmount,refundTrackingId)
 
         // await processRefund({_id,gatewayPaymentId,refundAmount,refundTrackingId})
-        await refundQueue.add("refund-payment", {
-            _id,
-            gatewayPaymentId,
-            refundAmount,
-            refundTrackingId
-            // paymentId: payment._id,
-        },
-        {
-            jobId: refundTrackingId.toString(),
-            attempts: 5,
-            backoff: {
-                type: "exponential",
-                delay: 5000
+        // await refundQueue.add("refund-payment", {
+        //     _id,
+        //     gatewayPaymentId,
+        //     refundAmount,
+        //     refundTrackingId
+        //     // paymentId: payment._id,
+        // },
+        // {
+        //     jobId: refundTrackingId.toString(),
+        //     attempts: 5,
+        //     backoff: {
+        //         type: "exponential",
+        //         delay: 5000
+        //     }
+        // }
+        // );
+
+        const finalRes = await BookedRideModel.updateOne(
+            {
+                _id,
+                "refunds._id": refundTrackingId
+            },
+            {
+                $set: {
+                    "refunds.$.queue.status": "queued",
+                    "refunds.$.queue.updated_at": new Date()
+                }
             }
-        }
         );
 
-         const finalRes = await BookedRideModel.updateOne(
-                {
-                    _id,
-                    "refunds._id": refundTrackingId
-                },
-                {
-                    $set: {
-                        "refunds.$.queue.status": "queued",
-                        "refunds.$.queue.updated_at": new Date()
-                    }
-                }
-            );
+        console.log("Refund marked queued:", finalRes);
+
+        await createTask({
+            path: "/internal/refund",
+            payload: {
+                _id,
+                gatewayPaymentId,
+                refundAmount,
+                refundTrackingId
+            }
+        });
         console.log("After Final Update")
         
         res.status(200).json({message:"Ride Cancelled"})

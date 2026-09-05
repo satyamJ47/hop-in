@@ -1,6 +1,5 @@
-const connectDB = require("../config/mongodb");
 const { BookedRideModel, PaymentModel } = require("../db");
-const refundQueue = require("../queues/refund.queue");
+const { createTask } = require("../config/cloudTasks");
 
 async function refundRecoveryScheduler() {
     try {
@@ -45,52 +44,44 @@ async function refundRecoveryScheduler() {
 
                     try {
 
-                        const jobId = refund._id.toString();
-                        const existingJob = await refundQueue.getJob(jobId);
+                        // const jobId = refund._id.toString();
+                        // const existingJob = await refundQueue.getJob(jobId);
 
-                        if (existingJob) {
-                            const state = await existingJob.getState();
-                            console.log(state)
-                            if (state === "failed") {
+                        // if (existingJob) {
+                        //     const state = await existingJob.getState();
+                        //     console.log(state)
+                        //     if (state === "failed") {
                                 
-                                await existingJob.remove();
-                            }
-                            else {
-                                // Job is already waiting/active/delayed.
-                                continue;
-                            }
-                        }
+                        //         await existingJob.remove();
+                        //     }
+                        //     else {
+                        //         // Job is already waiting/active/delayed.
+                        //         continue;
+                        //     }
+                        // }
 
-                        await refundQueue.add(
-                            "refund-payment",
-                            {
-                                _id: booking._id,
-                                gatewayPaymentId: payment.gatewayPaymentId,
-                                refundAmount: refund.amount,
-                                refundTrackingId: refund._id
-                            },
-                            {
-                                jobId: refund._id.toString(),
-                                attempts: 5,
-                                backoff: {
-                                    type: "exponential",
-                                    delay: 5000
-                                }
-                            }
-                        );
+             await BookedRideModel.updateOne(
+                {
+                    _id: booking._id,
+                    "refunds._id": refund._id
+                },
+                {
+                    $set: {
+                        "refunds.$.queue.status": "queued",
+                        "refunds.$.queue.updated_at": new Date()
+                    }
+                }
+            );
 
-                        await BookedRideModel.updateOne(
-                            {
-                                _id: booking._id,
-                                "refunds._id": refund._id
-                            },
-                            {
-                                $set: {
-                                    "refunds.$.queue.status": "queued",
-                                    "refunds.$.queue.updated_at": new Date()
-                                }
-                            }
-                        );
+            await createTask({
+                path: "/internal/refund",
+                payload: {
+                    _id: booking._id,
+                    gatewayPaymentId: payment.gatewayPaymentId,
+                    refundAmount: refund.amount,
+                    refundTrackingId: refund._id
+                }
+            });
 
                     } catch (err) {
 
