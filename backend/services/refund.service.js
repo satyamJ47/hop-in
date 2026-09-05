@@ -32,7 +32,7 @@ async function processRefund({_id,gatewayPaymentId,refundAmount,refundTrackingId
                     
                     console.log(refund)
                     // test purpose
-                    throw new Error("Crash");
+                    // throw new Error("Crash");
 
                 if(refund.modifiedCount == 0){
                     console.log("Refund already initiated or in processing.");
