@@ -89,7 +89,9 @@ async function processRefund({_id,gatewayPaymentId,refundAmount,refundTrackingId
                 {
                     $set: {
                         "refunds.$.refund_id": refundResponse.id,
-                        "refunds.$.razorpay_status": refundResponse.status
+                        "refunds.$.razorpay_status": refundResponse.status,
+                        "refunds.$.queue.status": "completed",
+                        "refunds.$.queue.updated_at": new Date()
                     }
                 }
             );
