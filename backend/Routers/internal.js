@@ -4,6 +4,7 @@ const router = express.Router();
 const expireSeatHolds = require("../jobs/seatHoldExpiryJob");
 const { processRefund } = require("../services/refund.service");
 const { createTask } = require("../config/cloudTasks");
+const { BookedRideModel } = require("../db");
 
 const INTERNAL_JOB_SECRET = process.env.INTERNAL_JOB_SECRET;
 
