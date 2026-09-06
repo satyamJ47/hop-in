@@ -77,18 +77,43 @@ router.post("/expire-seat-holds", verifyInternalJob, async (req, res) => {
 });
 
 router.post("/refund", verifyInternalJob, async (req, res) => {
+    let attempt;
+    let _id;
+    let refundTrackingId;
     try {
+
+        const retryCount = Number(
+            req.headers["x-cloudtasks-taskretrycount"] || 0
+        );
+
+        attempt = retryCount + 1;
+
+        console.log("Refund attempt:", attempt);
         console.log("Refund job triggered");
         console.log(req.body);
-        console.log("req headers")
-        console.log(req.headers);
-
+        
         const {
-            _id,
+            _id: bookingId,
             gatewayPaymentId,
             refundAmount,
-            refundTrackingId
+            refundTrackingId: trackingId
         } = req.body;
+
+        _id = bookingId;
+        refundTrackingId = trackingId;
+        
+        await BookedRideModel.updateOne(
+            {
+                _id,
+                "refunds._id": refundTrackingId
+            },
+            {
+                $set: {
+                    "refunds.$.queue.attempts": attempt,
+                    "refunds.$.queue.updated_at": new Date()
+                }
+            }
+        );
 
         await processRefund({
             _id,
@@ -104,6 +129,24 @@ router.post("/refund", verifyInternalJob, async (req, res) => {
     }
     catch (err) {
         console.error("Refund job failed:", err);
+
+        const MAX_ATTEMPTS = 5;
+
+        if (attempt >= MAX_ATTEMPTS) {
+            await BookedRideModel.updateOne(
+                {
+                    _id,
+                    "refunds._id": refundTrackingId
+                },
+                {
+                    $set: {
+                        "refunds.$.queue.status": "failed",
+                        "refunds.$.queue.attempts": attempt,
+                        "refunds.$.queue.updated_at": new Date()
+                    }
+                }
+            );
+        }
 
         return res.status(500).json({
             success: false,
