@@ -80,6 +80,8 @@ router.post("/refund", verifyInternalJob, async (req, res) => {
     try {
         console.log("Refund job triggered");
         console.log(req.body);
+        console.log("req headers")
+        console.log(req.headers);
 
         const {
             _id,
