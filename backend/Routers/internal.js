@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const expireSeatHolds = require("../jobs/seatHoldExpiryJob");
+const refundRecoveryScheduler = require("../jobs/refundRecoveryScheduler");
 const { processRefund } = require("../services/refund.service");
 const { createTask } = require("../config/cloudTasks");
 const { BookedRideModel } = require("../db");
@@ -73,6 +74,27 @@ router.post("/expire-seat-holds", verifyInternalJob, async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Seat hold expiry job failed"
+        });
+    }
+});
+
+router.post("/refund-recovery", verifyInternalJob, async (req, res) => {
+    try {
+        console.log("Refund recovery scheduler triggered");
+
+        await refundRecoveryScheduler();
+
+        return res.status(200).json({
+            success: true,
+            message: "Refund recovery scheduler completed"
+        });
+    }
+    catch (err) {
+        console.error("Refund recovery scheduler failed:", err);
+
+        return res.status(500).json({
+            success: false,
+            message: "Refund recovery scheduler failed"
         });
     }
 });
