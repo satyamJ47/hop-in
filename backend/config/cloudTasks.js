@@ -9,7 +9,7 @@ const QUEUE = "refund-queue";
 const CLOUD_RUN_URL =
     "https://hop-in-api-228930823058.asia-southeast1.run.app";
 
-async function createTask({ path, payload }) {
+async function createTask({ path, payload, taskId }) {
     const parent = client.queuePath(
         PROJECT_ID,
         LOCATION,
@@ -17,6 +17,7 @@ async function createTask({ path, payload }) {
     );
 
     const task = {
+        name: `${parent}/tasks/refund-${taskId}`,
         httpRequest: {
             httpMethod: "POST",
             url: `${CLOUD_RUN_URL}${path}`,

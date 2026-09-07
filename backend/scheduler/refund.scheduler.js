@@ -60,7 +60,7 @@ async function refundRecoveryScheduler() {
                         //     }
                         // }
 
-             await BookedRideModel.updateOne(
+             const result = await BookedRideModel.updateOne(
                 {
                     _id: booking._id,
                     "refunds._id": refund._id
@@ -74,6 +74,7 @@ async function refundRecoveryScheduler() {
             );
 
             await createTask({
+                taskId: refund._id.toString(),
                 path: "/internal/refund",
                 payload: {
                     _id: booking._id,
@@ -88,6 +89,18 @@ async function refundRecoveryScheduler() {
                         console.error(
                             `Failed to enqueue refund ${refund._id}`,
                             err.message
+                        );
+                        await BookedRideModel.updateOne(
+                            {
+                                _id: booking._id,
+                                "refunds._id": refund._id
+                            },
+                            {
+                                $set: {
+                                    "refunds.$.queue.status": "pending",
+                                    "refunds.$.queue.updated_at": new Date()
+                                }
+                            }
                         );
 
                     }

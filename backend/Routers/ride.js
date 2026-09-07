@@ -101,15 +101,34 @@ rideRouter.post("/cancel",auth,validate(cancellSchema),async (req,res)=>{
 
         console.log("Refund marked queued:", finalRes);
 
-        await createTask({
-            path: "/internal/refund",
-            payload: {
-                _id,
-                gatewayPaymentId,
-                refundAmount,
-                refundTrackingId
-            }
-        });
+        try {
+            await createTask({
+                taskId: refundTrackingId.toString(),
+                path: "/internal/refund",
+                payload: {
+                    _id,
+                    gatewayPaymentId,
+                    refundAmount,
+                    refundTrackingId
+                }
+            });
+        } catch (err) {
+
+            await BookedRideModel.updateOne(
+                {
+                    _id,
+                    "refunds._id": refundTrackingId
+                },
+                {
+                    $set: {
+                        "refunds.$.queue.status": "pending",
+                        "refunds.$.queue.updated_at": new Date()
+                    }
+                }
+            );
+
+            throw err;
+        }
         console.log("After Final Update")
         
         res.status(200).json({message:"Ride Cancelled"})
