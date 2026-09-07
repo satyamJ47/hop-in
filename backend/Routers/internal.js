@@ -2,10 +2,10 @@ const express = require("express");
 const router = express.Router();
 
 const expireSeatHolds = require("../jobs/seatHoldExpiryJob");
-const refundRecoveryScheduler = require("../jobs/refundRecoveryScheduler");
 const { processRefund } = require("../services/refund.service");
 const { createTask } = require("../config/cloudTasks");
 const { BookedRideModel } = require("../db");
+const refundRecoveryScheduler = require("../scheduler/refund.scheduler");
 
 const INTERNAL_JOB_SECRET = process.env.INTERNAL_JOB_SECRET;
 
