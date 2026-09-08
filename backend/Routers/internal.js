@@ -104,7 +104,6 @@ router.post("/refund", verifyInternalJob, async (req, res) => {
     let _id;
     let refundTrackingId;
     try {
-
         const retryCount = Number(
             req.headers["x-cloudtasks-taskretrycount"] || 0
         );
@@ -137,6 +136,10 @@ router.post("/refund", verifyInternalJob, async (req, res) => {
                 }
             }
         );
+
+        if (process.env.TEST_REFUND_FAILURE === "true") {
+            throw new Error("Intentional refund failure for testing");
+        }
 
         await processRefund({
             _id,
