@@ -85,25 +85,27 @@ rideRouter.post("/cancel",auth,validate(cancellSchema),async (req,res)=>{
         //     }
         // }
         // );
-
-        const finalRes = await BookedRideModel.updateOne(
+        const taskGeneration = 1;
+        const queueRes  = await BookedRideModel.updateOne(
             {
                 _id,
                 "refunds._id": refundTrackingId
             },
             {
                 $set: {
+                    "refunds.$.queue.task_generation": taskGeneration,
                     "refunds.$.queue.status": "queued",
                     "refunds.$.queue.updated_at": new Date()
                 }
             }
         );
 
-        console.log("Refund marked queued:", finalRes);
+        console.log("Refund marked queued:", queueRes );
 
         try {
+            
             await createTask({
-                taskId: refundTrackingId.toString(),
+                taskId: `${refundTrackingId.toString()}-${taskGeneration}`,
                 path: "/internal/refund",
                 payload: {
                     _id,

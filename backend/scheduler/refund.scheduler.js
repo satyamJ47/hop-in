@@ -42,6 +42,7 @@ async function refundRecoveryScheduler() {
                         `Re-enqueuing refund ${refund._id} of booking ${booking._id}`
                     );
 
+                    const taskGeneration = (refund.queue.task_generation || 0) + 1;
                     try {
 
                         // const jobId = refund._id.toString();
@@ -68,13 +69,14 @@ async function refundRecoveryScheduler() {
                 {
                     $set: {
                         "refunds.$.queue.status": "queued",
+                        "refunds.$.queue.task_generation": taskGeneration,
                         "refunds.$.queue.updated_at": new Date()
                     }
                 }
             );
 
             await createTask({
-                taskId: refund._id.toString(),
+                taskId: `${refund._id.toString()}-${taskGeneration}`,
                 path: "/internal/refund",
                 payload: {
                     _id: booking._id,

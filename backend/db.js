@@ -193,6 +193,10 @@ const bookedRideSchema = new Schema({
 
     queue: {
       job_id: String,
+      task_generation: {
+          type: Number,
+          default: 0
+      },
       status: {
           type: String,
           enum: ["pending", "queued", "processing", "completed", "failed"],
