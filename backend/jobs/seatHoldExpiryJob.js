@@ -52,19 +52,23 @@ async function expireSeatHolds() {
                 continue;
             }
 
-            // Return the seats as part of the SAME transaction.
-            await RideModel.findByIdAndUpdate(
+            const ride = await RideModel.findByIdAndUpdate(
                 hold.ride_id,
                 {
                     $inc: {
-                        available_seats: -bookedSeats,
-                        booked_seats: bookedSeats,
+                        available_seats: hold.seats,
+                        booked_seats: -hold.seats
                     }
                 },
                 {
-                    session
+                    session,
+                    new: true
                 }
             );
+
+            if (!ride) {
+                throw new Error(`Ride ${hold.ride_id} not found`);
+            }
 
             await session.commitTransaction();
 
