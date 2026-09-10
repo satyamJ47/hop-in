@@ -26,7 +26,7 @@ async function createSeatHold({_id,bookedSeats,passenger_id,session}) {
             passenger_id:passenger_id,
             seats:bookedSeats,
             amount:amount,
-            expiresAt:new Date(Date.now() + 2 * 60 * 1000)
+            expiresAt:new Date(Date.now() + 8 * 60 * 1000)
         }],{session})
 
         return {

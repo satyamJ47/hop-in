@@ -33,7 +33,7 @@ async function expireSeatHolds() {
                 {
                     $set: {
                         status: "expired",
-                        cleanupAt: new Date(Date.now() + 5 * 60 * 1000)
+                        cleanupAt: new Date(Date.now() + 30 * 60 * 1000)
                     }
                 },
                 {
