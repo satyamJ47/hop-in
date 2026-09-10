@@ -14,6 +14,8 @@ export default function SearchPage() {
     const [searchParams] = useSearchParams();
     const [nextCursor, setNextCursor] = useState(null);
 
+    const [compactSearch, setCompactSearch] = useState(false);
+
     const loadMoreController = useRef(null);
 
     const source = searchParams.get("src");
@@ -24,7 +26,6 @@ export default function SearchPage() {
         source && destination && date;
 
     useEffect(() => {
-        // No search has been performed yet
         if (!source || !destination || !date) {
             setRides([]);
             setNextCursor(null);
@@ -33,7 +34,6 @@ export default function SearchPage() {
             return;
         }
 
-        // Clear previous search results
         setRides([]);
         setNextCursor(null);
         setError(null);
@@ -74,6 +74,18 @@ export default function SearchPage() {
             loadMoreController.current?.abort();
         };
     }, [source, destination, date]);
+
+    useEffect(() => {
+        function handleScroll() {
+            setCompactSearch(window.scrollY > 80);
+        }
+
+        window.addEventListener("scroll", handleScroll);
+
+        return () => {
+            window.removeEventListener("scroll", handleScroll);
+        };
+    }, []);
 
     async function loadMoreRides() {
         if (!nextCursor || loadingMore) {
@@ -118,20 +130,27 @@ export default function SearchPage() {
     }
 
     return (
-        <>
-            {/* Search Form */}
-            <div className="mx-auto max-w-7xl px-6 pt-6">
-                <SearchForm />
+        <div className="min-h-screen">
+
+            {/* Sticky Search Bar */}
+            <div
+                className={`sticky top-16 z-40 border-b bg-background/95 backdrop-blur transition-all duration-300 ${
+                    compactSearch ? "py-2" : "py-4"
+                }`}
+            >
+                <div className="mx-auto max-w-5xl px-6">
+                    <SearchForm compact={compactSearch} />
+                </div>
             </div>
 
-            {/* Initial state - no search yet */}
+            {/* Initial State */}
             {!hasSearchParams && (
-                <div className="mx-auto max-w-4xl px-6 pt-12 text-center">
-                    <h2 className="text-xl font-semibold">
+                <div className="mx-auto max-w-4xl px-6 py-16 text-center">
+                    <h1 className="text-2xl font-bold">
                         Find your next ride
-                    </h2>
+                    </h1>
 
-                    <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+                    <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-muted-foreground">
                         Enter your pickup location, destination,
                         and travel date to find available rides.
                     </p>
@@ -140,74 +159,79 @@ export default function SearchPage() {
 
             {/* Search Results */}
             {hasSearchParams && (
-                <>
+                <main className="mx-auto max-w-4xl px-6 py-8">
+
                     {/* Search Summary */}
-                    <div className="mx-auto max-w-4xl px-6 pt-8">
-                        <div className="flex items-end justify-between">
-                            <div>
-                                <h1 className="text-2xl font-bold">
-                                    {source} → {destination}
-                                </h1>
+                    <div className="flex items-end justify-between gap-4">
+                        <div>
+                            <h1 className="text-2xl font-bold">
+                                {source} → {destination}
+                            </h1>
 
-                                <p className="mt-1 text-sm text-muted-foreground">
-                                    {format(
-                                        new Date(date),
-                                        "dd MMM yyyy"
-                                    )}
-                                </p>
-                            </div>
-
-                            {!loading && !error && (
-                                <p className="text-sm text-muted-foreground">
-                                    {rides.length}{" "}
-                                    {rides.length === 1
-                                        ? "ride"
-                                        : "rides"}
-                                </p>
-                            )}
+                            <p className="mt-1 text-sm text-muted-foreground">
+                                {format(
+                                    new Date(date),
+                                    "dd MMM yyyy"
+                                )}
+                            </p>
                         </div>
+
+                        {!loading && !error && (
+                            <p className="shrink-0 text-sm text-muted-foreground">
+                                {rides.length}{" "}
+                                {rides.length === 1
+                                    ? "ride"
+                                    : "rides"}
+                            </p>
+                        )}
                     </div>
 
                     {/* Loading */}
                     {loading && (
-                        <div className="mx-auto mt-8 max-w-4xl px-6">
-                            <p className="text-muted-foreground">
-                                Loading rides...
+                        <div className="py-12 text-center">
+                            <p className="text-sm text-muted-foreground">
+                                Finding available rides...
                             </p>
                         </div>
                     )}
 
                     {/* Error */}
                     {!loading && error && (
-                        <div className="mx-auto mt-8 max-w-4xl px-6">
-                            <p className="text-destructive">
+                        <div className="py-12 text-center">
+                            <p className="text-sm text-destructive">
                                 {error}
                             </p>
                         </div>
                     )}
 
-                    {/* Rides */}
+                    {/* Results */}
                     {!loading && !error && (
                         <>
-                            <div className="mx-auto mt-8 max-w-4xl space-y-4 px-6">
-                                {rides.length === 0 ? (
-                                    <p className="text-muted-foreground">
-                                        No rides found for this route
-                                        and date.
+                            {rides.length === 0 ? (
+                                <div className="py-16 text-center">
+                                    <h2 className="font-semibold">
+                                        No rides found
+                                    </h2>
+
+                                    <p className="mt-2 text-sm text-muted-foreground">
+                                        No rides are available for this
+                                        route and date.
                                     </p>
-                                ) : (
-                                    rides.map((ride) => (
+                                </div>
+                            ) : (
+                                <div className="mt-8 space-y-4">
+                                    {rides.map((ride) => (
                                         <RideCard
                                             key={ride._id}
                                             ride={ride}
                                         />
-                                    ))
-                                )}
-                            </div>
+                                    ))}
+                                </div>
+                            )}
 
                             {/* Load More */}
                             {nextCursor && (
-                                <div className="mt-6 flex justify-center">
+                                <div className="mt-8 flex justify-center">
                                     <Button
                                         onClick={loadMoreRides}
                                         disabled={loadingMore}
@@ -220,8 +244,8 @@ export default function SearchPage() {
                             )}
                         </>
                     )}
-                </>
+                </main>
             )}
-        </>
+        </div>
     );
 }
