@@ -79,7 +79,8 @@ driverProfileRouter.post("/ride",auth,async (req,res)=>{
         });
     }
     const available_seats = vehicle.seats
-    const response = await RideModel.create({driver_id,vehicle_id,src,dest,departure_time,available_seats,fare})
+    const total_seats = vehicle.seats
+    const response = await RideModel.create({driver_id,vehicle_id,src,dest,departure_time,total_seats,available_seats,fare})
     return res.status(201).json({
         message: "Ride created",
         ride: response
