@@ -32,7 +32,12 @@ const userSchema = new Schema({
     password: {
         type: String,
         required: true
-    }
+    },
+
+    is_demo: {
+    type: Boolean,
+    default: false
+}
 }, { timestamps: true });
 
 const driverProfileSchema = new Schema({
@@ -61,7 +66,12 @@ const driverProfileSchema = new Schema({
     total_ratings: {
         type: Number,
         default: 0
-    }
+    },
+
+    is_demo: {
+    type: Boolean,
+    default: false
+}
 
 }, { timestamps: true });
 
@@ -81,13 +91,18 @@ const rideSchema = new Schema({
     src: String,
     dest: String,
     departure_time: Date,
+    total_seats: Number,
     available_seats: Number,
     booked_seats: {
       type: Number,
       default: 0,
       min: 0
     },
-    fare: Number
+    fare: Number,
+    is_demo: {
+    type: Boolean,
+    default: false
+}
 },{ timestamps: true })
 
 rideSchema.index({ src: 1, dest: 1, departure_time: 1 });
@@ -256,6 +271,10 @@ const vehicleSchema = new Schema({
     color: String,
     type: String, //Ac non Ac
     seats: Number,
+    is_demo: {
+        type: Boolean,
+        default: false
+    }
 },{ timestamps: true })
 
 // const DriverModel = mongoose.model("driver",driverSchema);

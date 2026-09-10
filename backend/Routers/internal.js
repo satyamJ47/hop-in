@@ -6,6 +6,7 @@ const { processRefund } = require("../services/refund.service");
 const { createTask } = require("../config/cloudTasks");
 const { BookedRideModel } = require("../db");
 const refundRecoveryScheduler = require("../scheduler/refund.scheduler");
+const { generateDemoRides } = require("../services/demoRide.service");
 
 const INTERNAL_JOB_SECRET = process.env.INTERNAL_JOB_SECRET;
 
@@ -173,6 +174,27 @@ router.post("/refund", verifyInternalJob, async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Refund job failed"
+        });
+    }
+});
+
+router.post("/generate-demo-rides", verifyInternalJob, async (req, res) => {
+    try {
+        console.log("Demo ride generator triggered");
+
+        const result = await generateDemoRides();
+
+        return res.status(200).json({
+            success: true,
+            message: "Demo rides generated successfully",
+            ...result
+        });
+    } catch (err) {
+        console.error("Demo ride generation failed:", err);
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to generate demo rides"
         });
     }
 });
